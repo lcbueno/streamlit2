@@ -401,9 +401,10 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
                     text=''
             )]
         
-        layout_neutral = go.Layout(
-            title='Top 30 Word Frequencies in Positive Reviews'
-        )
+            layout_negative = go.Layout(
+                title='Top 30 Word Frequencies in Negative Reviews',
+                xaxis=dict(tickangle=-45)  # Ajusta a rotação dos rótulos do eixo x
+            )
         
         fig_neutral = go.Figure(data=data_neutral, layout=layout_neutral)
         st.plotly_chart(fig_neutral)
