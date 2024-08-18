@@ -3,6 +3,7 @@ import streamlit as st
 import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
+from wordcloud import WordCloud
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -312,12 +313,14 @@ if df_sales is not None and st.session_state['page'] != "NLP":
 if df_nlp is not None and st.session_state['page'] == "NLP":
     st.title('Dashboard Yamaha - NLP Analysis')
 
-    # Botão no topo para escolher o gráfico de Análise de Sentimento
-    col1 = st.columns(1)  # Correção para evitar o erro: use col1 diretamente
-    col1 = col1[0]  # Certifique-se de pegar a primeira (e única) coluna
+    # Botões no topo para escolher o gráfico
+    col1, col2 = st.columns(2)
     with col1:
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
+    with col2:
+        if st.button("Word Cloud"):
+            st.session_state['chart_type'] = "Word Cloud"
 
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
         # Extrair os componentes do sentimento de forma correta
@@ -356,6 +359,18 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
 
         # Exibir o gráfico interativo
         st.plotly_chart(fig)
+    
+    elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Word Cloud":
+        # Gerar a Word Cloud para as marcas
+        text = " ".join(review for review in df_nlp['brand_name'])
+        wordcloud = WordCloud(background_color="white", width=800, height=400).generate(text)
+
+        # Exibir a Word Cloud
+        plt.figure(figsize=(10, 5))
+        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.axis("off")
+        plt.show()
+        st.pyplot(plt)
 
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
