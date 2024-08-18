@@ -13,6 +13,7 @@ import plotly.io as pio
 # Adicionando importação de NLTK e configuração para baixar recursos necessários
 import nltk
 from nltk.corpus import stopwords
+from nltk.corpus import wordnet
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -373,10 +374,19 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     # Exibir termos salientes com LDA
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Salient Terms":
         # Certificar-se de que os pacotes necessários estão disponíveis
-        nltk.download('stopwords')
-        nltk.download('wordnet')
+        try:
+            stop_words = stopwords.words('english')
+        except LookupError:
+            nltk.download('stopwords')
+            stop_words = stopwords.words('english')
+
+        try:
+            _ = wordnet.synsets('word')
+        except LookupError:
+            nltk.download('wordnet')
+            nltk.download('omw-1.4')
         
-        stop_words = stopwords.words('english')
+        # Stop words já foram definidas antes
 
         # Garantir que a coluna 'review' tenha valores válidos e tratar NaNs
         df_nlp['review'] = df_nlp['review'].astype(str).fillna('')
