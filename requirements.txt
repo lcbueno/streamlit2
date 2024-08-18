@@ -8,4 +8,5 @@ nltk
 pyLDAvis
 matplotlib
 wordcloud
+wordnet
 
