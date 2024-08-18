@@ -1,0 +1,11 @@
+streamlit
+pandas
+seaborn
+plotly
+matplotlib
+gensim
+nltk
+pyLDAvis
+matplotlib
+wordcloud
+
