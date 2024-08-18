@@ -9,12 +9,6 @@ from nltk import word_tokenize
 from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
 
-# Verifique se o vader_lexicon está instalado, caso contrário, continue sem ele.
-try:
-    nltk.data.find('sentiment/vader_lexicon.zip')
-except LookupError:
-    nltk.download('vader_lexicon', quiet=True)
-
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
 
@@ -388,50 +382,16 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         st.pyplot(plt)
     
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Top word frequency":
-        # Certifique-se de que o vader_lexicon está disponível
-        sia = SentimentIntensityAnalyzer()
-        df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
-        df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(lambda x: 'Positive' if x >= 0.05 else ('Negative' if x <= -0.05 else 'Neutral'))
+        # Contagem de palavras no dataset de NLP
+        word_counts = df_nlp['review'].str.split(expand=True).unstack().value_counts().reset_index()
+        word_counts.columns = ['Word', 'Count']
 
-        # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
-        df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
-        df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']  # Será tratado como Positivo
+        # Selecionar as top 10 palavras mais frequentes
+        top_10_words = word_counts.head(10)
 
-        # Contagem de palavras para cada categoria
-        negative_words = df_negative['review'].str.split(expand=True).unstack().value_counts()
-        neutral_words = df_neutral['review'].str.split(expand=True).unstack().value_counts()
-
-        # Criar gráfico de barras para palavras negativas
-        data_negative = [go.Bar(
-                    x = negative_words.index.values[:30],
-                    y = negative_words.values[:30],
-                    marker=dict(colorscale='Jet',
-                                color=negative_words.values[:30]),
-                    text=''
-        )]
-
-        layout_negative = go.Layout(
-            title='Top 30 Word Frequencies in Negative Reviews'
-        )
-
-        fig_negative = go.Figure(data=data_negative, layout=layout_negative)
-        st.plotly_chart(fig_negative)
-
-        # Criar gráfico de barras para palavras neutras (renomeadas como positivas)
-        data_neutral = [go.Bar(
-                    x = neutral_words.index.values[:30],
-                    y = neutral_words.values[:30],
-                    marker=dict(colorscale='Jet',
-                                color=neutral_words.values[:30]),
-                    text=''
-        )]
-
-        layout_neutral = go.Layout(
-            title='Top 30 Word Frequencies in Positive Reviews'
-        )
-
-        fig_neutral = go.Figure(data=data_neutral, layout=layout_neutral)
-        st.plotly_chart(fig_neutral)
+        # Criar gráfico de barras interativo
+        fig = px.bar(top_10_words, x='Word', y='Count', title='Top 10 Words', labels={'Word': 'Word', 'Count': 'Count'})
+        st.plotly_chart(fig)
 
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
