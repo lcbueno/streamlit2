@@ -14,11 +14,12 @@ import plotly.io as pio
 # Configuração para utilizar o caminho absoluto para nltk_data
 nltk_data_path = os.path.join(os.getcwd(), 'nltk_data')
 
-# Adicionando o caminho de nltk_data diretamente
+# Definindo o caminho do nltk_data manualmente antes de importar o NLTK
 os.environ['NLTK_DATA'] = nltk_data_path
 
 import nltk
-nltk.data.path.append(nltk_data_path)
+# Forçar o NLTK a usar o caminho do NLTK_DATA
+nltk.data.path = [nltk_data_path] + nltk.data.path
 
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
