@@ -436,5 +436,38 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         fig = px.bar(top_20_bigrams, x=bigram_strs, y='Count', title='Top 20 Bigrams', labels={'x': 'Bigram', 'Count': 'Count'})
         st.plotly_chart(fig)
 
+
+    elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Trigramas":
+        # Função para gerar trigramas
+        def gerar_trigrams(texto):
+            palavras = texto.split()
+            trigrams = [(palavras[i], palavras[i+1], palavras[i+2]) for i in range(len(palavras)-2)]
+            return trigrams
+    
+        # Garantir que a coluna 'review' não contenha valores nulos e todos os valores sejam strings
+        df_nlp['review'] = df_nlp['review'].fillna("").astype(str)
+    
+        # Gerar trigramas para todas as reviews
+        df_nlp['trigrams'] = df_nlp['review'].apply(gerar_trigrams)
+        
+        # Unificar os trigramas em uma única lista para contagem
+        all_trigrams = [trigram for sublist in df_nlp['trigrams'] for trigram in sublist]
+        
+        # Contagem de frequências de trigramas
+        trigram_counts = pd.Series(all_trigrams).value_counts().reset_index()
+        trigram_counts.columns = ['Trigram', 'Count']
+    
+        # Selecionar os 20 trigramas mais frequentes
+        top_20_trigrams = trigram_counts.head(20)
+    
+        # Criar gráfico interativo de trigramas
+        trigram_strs = top_20_trigrams['Trigram'].apply(lambda x: ' '.join(x))
+        fig = px.bar(top_20_trigrams, x=trigram_strs, y='Count', title='Top 20 Trigrams', labels={'x': 'Trigram', 'Count': 'Count'})
+        st.plotly_chart(fig)
+
+
+
+
+
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
