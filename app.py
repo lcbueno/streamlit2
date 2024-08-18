@@ -337,7 +337,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     ]
 
     # Botões no topo para escolher o gráfico
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     with col1:
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
@@ -353,6 +353,9 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     with col5:
         if st.button("Trigramas"):
             st.session_state['chart_type'] = "Trigramas"
+    with col6:
+        st.button("Top Words Sentiment Analysis")  # Botão sem funcionalidade vinculada
+
 
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
         # Extrair os componentes do sentimento de forma correta
