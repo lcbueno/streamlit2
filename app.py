@@ -6,11 +6,13 @@ import matplotlib.pyplot as plt
 import gensim
 from gensim import corpora
 from gensim.models import LdaModel
-from nltk.corpus import stopwords
-import nltk
 import pyLDAvis
 import pyLDAvis.gensim_models as gensimvis
 import plotly.io as pio
+
+# Adicionando importação de NLTK e configuração para baixar recursos necessários
+import nltk
+from nltk.corpus import stopwords
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -370,7 +372,10 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
 
     # Exibir termos salientes com LDA
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Salient Terms":
+        # Certificar-se de que os pacotes necessários estão disponíveis
         nltk.download('stopwords')
+        nltk.download('wordnet')
+        
         stop_words = stopwords.words('english')
 
         # Garantir que a coluna 'review' tenha valores válidos e tratar NaNs
