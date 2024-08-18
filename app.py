@@ -326,6 +326,16 @@ if df_sales is not None and st.session_state['page'] != "NLP":
 if df_nlp is not None and st.session_state['page'] == "NLP":
     st.title('Dashboard Yamaha - NLP Analysis')
 
+    # Paleta de cores personalizada
+    colorscale = [
+        [0.0, "rgb(0, 0, 139)"],   # Navy (equivalente ao roxo escuro)
+        [0.2, "rgb(75, 0, 130)"],  # Indigo
+        [0.4, "rgb(138, 43, 226)"], # BlueViolet
+        [0.6, "rgb(255, 0, 255)"],  # Magenta
+        [0.8, "rgb(255, 165, 0)"],  # Orange
+        [1.0, "rgb(255, 255, 0)"],  # Yellow
+    ]
+
     # Botões no topo para escolher o gráfico
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
@@ -377,7 +387,8 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
                      color='Sentimento', 
                      barmode='group',
                      labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
-                     title='Comparação de Sentimentos por Marca')
+                     title='Comparação de Sentimentos por Marca',
+                     color_continuous_scale=colorscale)  # Aplicando a paleta de cores
 
         # Exibir o gráfico interativo
         st.plotly_chart(fig)
@@ -405,7 +416,9 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         top_20_words = word_counts.head(20)
 
         # Criar gráfico de barras interativo
-        fig = px.bar(top_20_words, x='Word', y='Count', title='Top 20 Words', labels={'Word': 'Word', 'Count': 'Count'})
+        fig = px.bar(top_20_words, x='Word', y='Count', title='Top 20 Words', labels={'Word': 'Word', 'Count': 'Count'},
+                     color='Count',
+                     color_continuous_scale=colorscale)  # Aplicando a paleta de cores
         st.plotly_chart(fig)
     
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Bigramas":
@@ -433,7 +446,9 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
 
         # Criar gráfico interativo de bigramas
         bigram_strs = top_20_bigrams['Bigram'].apply(lambda x: ' '.join(x))
-        fig = px.bar(top_20_bigrams, x=bigram_strs, y='Count', title='Top 20 Bigrams', labels={'x': 'Bigram', 'Count': 'Count'})
+        fig = px.bar(top_20_bigrams, x=bigram_strs, y='Count', title='Top 20 Bigrams', labels={'x': 'Bigram', 'Count': 'Count'},
+                     color='Count',
+                     color_continuous_scale=colorscale)  # Aplicando a paleta de cores
         st.plotly_chart(fig)
 
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Trigramas":
@@ -467,14 +482,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
                      title='Top 20 Trigrams', 
                      labels={'x': 'Trigram', 'Count': 'Count'},
                      color='Count',
-                     color_continuous_scale=[
-                         [0.0, "rgb(0, 0, 139)"],   # Navy (equivalente ao roxo escuro)
-                         [0.2, "rgb(75, 0, 130)"],  # Indigo
-                         [0.4, "rgb(138, 43, 226)"], # BlueViolet
-                         [0.6, "rgb(255, 0, 255)"],  # Magenta
-                         [0.8, "rgb(255, 165, 0)"],  # Orange
-                         [1.0, "rgb(255, 255, 0)"]   # Yellow
-                     ])  # Aplicando a paleta de cores
+                     color_continuous_scale=colorscale)  # Aplicando a paleta de cores
         st.plotly_chart(fig)
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
