@@ -130,11 +130,11 @@ if df_sales is not None and st.session_state['page'] != "NLP":
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Overview':
             st.write("Sales DataFrame Visualization:")
-            st.dataframe(filtered_df, width=1500, height=300)  # Exibe o DataFrame de vendas
+            st.dataframe(filtered_df, width=1500, height=600)  # Exibe o DataFrame de vendas
     
             if df_nlp is not None:
                 st.write("NLP DataFrame Visualization:")
-                st.dataframe(df_nlp, width=1500, height=300)  # Exibe o DataFrame de NLP
+                st.dataframe(df_nlp, width=1500, height=600)  # Exibe o DataFrame de NLP
     
         elif st.session_state['chart_type'] == 'Unique Values':
             unique_counts = filtered_df.nunique()
