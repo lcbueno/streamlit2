@@ -255,17 +255,21 @@ if df_sales is not None and st.session_state['page'] != "NLP":
         if 'chart_type' not in st.session_state:
             st.session_state['chart_type'] = 'Receita Média por Tipo de Carro'
 
-        # Botões no topo para escolher o gráfico
-        col1, col2, col3 = st.columns(3)
+        # Primeira linha de botões para a página "Vehicle Sales"
+        col1, col2 = st.columns(2)
         with col1:
             if st.button("Average Revenue by Car Type"):
                 st.session_state['chart_type'] = "Receita Média por Tipo de Carro"
         with col2:
             if st.button("Top 10 Companies by Revenue"):
                 st.session_state['chart_type'] = "Top 10 Empresas por Receita"
-        with col3:
+        
+        # Segunda linha de botões para a página "Vehicle Sales"
+        col3 = st.columns(1)
+        with col3[0]:
             if st.button("Transmission Distribution by Engine"):
                 st.session_state['chart_type'] = "Distribuição de Transmissão por Motor"
+
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Receita Média por Tipo de Carro':
