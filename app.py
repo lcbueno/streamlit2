@@ -336,32 +336,29 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         [1.0, "rgb(255, 255, 0)"],  # Yellow
     ]
 
-    # Botões no topo para escolher o gráfico
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    # Primeira linha de botões
+    col1, col2, col3 = st.columns(3)
     with col1:
-        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
     with col2:
-        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Word Cloud"):
             st.session_state['chart_type'] = "Word Cloud"
     with col3:
-        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Top word frequency"):
             st.session_state['chart_type'] = "Top word frequency"
+    
+    # Segunda linha de botões
+    col4, col5, col6 = st.columns(3)
     with col4:
-        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Bigramas"):
             st.session_state['chart_type'] = "Bigramas"
     with col5:
-        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Trigramas"):
             st.session_state['chart_type'] = "Trigramas"
     with col6:
-        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Top Words Sentiment Analysis"):
-            st.session_state['chart_type'] = "Top Words Sentiment Analysis"  # Vincula a funcionalidade
+            st.session_state['chart_type'] = "Top Words Sentiment Analysis"
 
         
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Top Words Sentiment Analysis":
