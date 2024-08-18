@@ -57,6 +57,8 @@ if st.sidebar.button("Vehicle Sales"):
     st.session_state['page'] = 'Vendas Carros'
 if st.sidebar.button("Customer Profile"):
     st.session_state['page'] = 'Perfil do Cliente'
+if st.sidebar.button("NLP"):
+    st.session_state['page'] = 'NLP'  # Adiciona a funcionalidade do botão NLP
 
 # Botão de upload do arquivo CSV abaixo dos botões de seleção de página
 uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
@@ -295,5 +297,11 @@ if uploaded_file is not None:
                           barmode='group')
 
             st.plotly_chart(fig7)
+    
+    # Página: NLP
+    elif st.session_state['page'] == "NLP":
+        st.title('Dashboard Yamaha - NLP Analysis')
+        st.write("Conteúdo de NLP será exibido aqui.")
+
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
