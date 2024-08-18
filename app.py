@@ -63,31 +63,42 @@ if st.sidebar.button("Vehicle Sales"):
 if st.sidebar.button("Customer Profile"):
     st.session_state['page'] = 'Perfil do Cliente'
 
-# Botão de upload do arquivo CSV abaixo dos botões de seleção de página
-uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
+# Botões de upload para dois arquivos CSV diferentes
+uploaded_file_1 = st.sidebar.file_uploader("Choose first CSV file", type="csv")
+uploaded_file_2 = st.sidebar.file_uploader("Choose second CSV file", type="csv")
 
 # Inicializar o estado da sessão para a página principal
 if 'page' not in st.session_state:
     st.session_state['page'] = 'Overview Data'
 
-if uploaded_file is not None:
-    # Carregar o dataset com a codificação correta
-    df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
+if uploaded_file_1 is not None and uploaded_file_2 is not None:
+    # Carregar os datasets com a codificação correta
+    df1 = pd.read_csv(uploaded_file_1, encoding='ISO-8859-1')
+    df2 = pd.read_csv(uploaded_file_2, encoding='ISO-8859-1')
 
-    # Verificar se a coluna 'Date' existe no dataframe
-    if 'Date' in df.columns:
+    # Verificar se a coluna 'Date' existe no primeiro dataframe
+    if 'Date' in df1.columns:
         # Converter a coluna "Date" para datetime sem exibir a mensagem de aviso
-        df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
-
+        df1['Date'] = pd.to_datetime(df1['Date'], dayfirst=True, errors='coerce')
         # Remover qualquer linha com datas inválidas (NaT)
-        df = df.dropna(subset=['Date'])
+        df1 = df1.dropna(subset=['Date'])
     else:
-        st.error("A coluna 'Date' não foi encontrada no arquivo CSV. Verifique o arquivo e tente novamente.")
+        st.error("A coluna 'Date' não foi encontrada no primeiro arquivo CSV. Verifique o arquivo e tente novamente.")
 
-    # Aplicar filtros (sem mostrar no layout)
-    regions = df['Dealer_Region'].unique() if 'Dealer_Region' in df.columns else []
-    min_date = df['Date'].min().date() if 'Date' in df.columns else None
-    max_date = df['Date'].max().date() if 'Date' in df.columns else None
+    # Verificar se a coluna 'sentiment score' existe no segundo dataframe
+    if 'sentiment score' in df2.columns:
+        # Extrair os componentes do sentimento de forma correta
+        df_sentiment_scores = pd.json_normalize(df2['sentiment score'].apply(eval))
+        df2['sentiment_pos'] = df_sentiment_scores['pos']
+        df2['sentiment_neg'] = df_sentiment_scores['neg']
+        df2['sentiment_neu'] = df_sentiment_scores['neu']
+    else:
+        st.error("A coluna 'sentiment score' não foi encontrada no segundo arquivo CSV. Verifique o arquivo e tente novamente.")
+
+    # Aplicar filtros (sem mostrar no layout) no primeiro dataset
+    regions = df1['Dealer_Region'].unique() if 'Dealer_Region' in df1.columns else []
+    min_date = df1['Date'].min().date() if 'Date' in df1.columns else None
+    max_date = df1['Date'].max().date() if 'Date' in df1.columns else None
     selected_region = regions  # Aplica automaticamente todas as regiões
     selected_dates = [min_date, max_date] if min_date and max_date else []  # Aplica automaticamente o intervalo completo
 
@@ -95,12 +106,12 @@ if uploaded_file is not None:
     if selected_dates:
         selected_dates = pd.to_datetime(selected_dates)
 
-    # Filtrando o DataFrame para todas as páginas, se possível
+    # Filtrando o primeiro DataFrame para todas as páginas, se possível
     if selected_region and selected_dates:
-        filtered_df = df[(df['Dealer_Region'].isin(selected_region)) & 
-                         (df['Date'].between(selected_dates[0], selected_dates[1]))]
+        filtered_df1 = df1[(df1['Dealer_Region'].isin(selected_region)) & 
+                           (df1['Date'].between(selected_dates[0], selected_dates[1]))]
     else:
-        filtered_df = df
+        filtered_df1 = df1
 
     # Página: NLP
     if st.session_state['page'] == "NLP":
@@ -118,46 +129,36 @@ if uploaded_file is not None:
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Sentiment Analysis':
-            # Verifique se a coluna 'sentiment score' existe
-            if 'sentiment score' in df.columns:
-                # Extrair os componentes do sentimento de forma correta
-                df_sentiment_scores = pd.json_normalize(df['sentiment score'].apply(eval))
-                df['sentiment_pos'] = df_sentiment_scores['pos']
-                df['sentiment_neg'] = df_sentiment_scores['neg']
-                df['sentiment_neu'] = df_sentiment_scores['neu']
+            # Calcular a média dos sentimentos por marca
+            brand_sentiment = df2.groupby('brand_name').agg({
+                'sentiment_pos': 'mean',
+                'sentiment_neg': 'mean',
+                'sentiment_neu': 'mean'
+            }).reset_index()
 
-                # Calcular a média dos sentimentos por marca
-                brand_sentiment = df.groupby('brand_name').agg({
-                    'sentiment_pos': 'mean',
-                    'sentiment_neg': 'mean',
-                    'sentiment_neu': 'mean'
-                }).reset_index()
+            # Transformar os dados para um formato longo para facilitar a plotagem
+            brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
+                                                          value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
+                                                          var_name='Sentimento', value_name='Média')
 
-                # Transformar os dados para um formato longo para facilitar a plotagem
-                brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
-                                                              value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
-                                                              var_name='Sentimento', value_name='Média')
+            # Mapeamento de nomes mais legíveis
+            brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
+                'sentiment_pos': 'Positivo',
+                'sentiment_neg': 'Negativo',
+                'sentiment_neu': 'Neutro'
+            })
 
-                # Mapeamento de nomes mais legíveis
-                brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
-                    'sentiment_pos': 'Positivo',
-                    'sentiment_neg': 'Negativo',
-                    'sentiment_neu': 'Neutro'
-                })
+            # Criar gráfico interativo usando Plotly
+            fig = px.bar(brand_sentiment_melted, 
+                         x='brand_name', 
+                         y='Média', 
+                         color='Sentimento', 
+                         barmode='group',
+                         labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
+                         title='Comparação de Sentimentos por Marca')
 
-                # Criar gráfico interativo usando Plotly
-                fig = px.bar(brand_sentiment_melted, 
-                             x='brand_name', 
-                             y='Média', 
-                             color='Sentimento', 
-                             barmode='group',
-                             labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
-                             title='Comparação de Sentimentos por Marca')
-
-                # Exibir o gráfico interativo
-                st.plotly_chart(fig)
-            else:
-                st.error("A coluna 'sentiment score' não foi encontrada no arquivo CSV. Verifique o arquivo e tente novamente.")
+            # Exibir o gráfico interativo
+            st.plotly_chart(fig)
 
     # Página: Visão Geral Dados
     elif st.session_state['page'] == "Overview":
@@ -182,17 +183,17 @@ if uploaded_file is not None:
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Overview':
             st.write("DataFrame Visualization:")
-            st.dataframe(df, width=1500, height=600)
+            st.dataframe(df1, width=1500, height=600)
 
         elif st.session_state['chart_type'] == 'Unique Values':
-            unique_counts = df.nunique()
+            unique_counts = df1.nunique()
             st.write("Count unique values ​​per column:")
             st.write(unique_counts)
 
         elif st.session_state['chart_type'] == 'Download Dataset':
             st.download_button(
                 label="Download Full Dataset",
-                data=df.to_csv(index=False),
+                data=df1.to_csv(index=False),
                 file_name='dataset_completo.csv',
                 mime='text/csv',
             )
@@ -225,18 +226,18 @@ if uploaded_file is not None:
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Distribuição de Vendas por Região':
-            sales_by_region = filtered_df['Dealer_Region'].value_counts().reset_index()
+            sales_by_region = filtered_df1['Dealer_Region'].value_counts().reset_index()
             sales_by_region.columns = ['Dealer_Region', 'count']
             fig1 = px.pie(sales_by_region, names='Dealer_Region', values='count', title='Sales by Region')
             st.plotly_chart(fig1)
 
         elif st.session_state['chart_type'] == 'Evolução de Vendas':
-            sales_over_time = filtered_df.groupby('Date').size().reset_index(name='Counts')
+            sales_over_time = filtered_df1.groupby('Date').size().reset_index(name='Counts')
             fig4 = px.line(sales_over_time, x='Date', y='Counts', title='Sales Evolution Over Time')
             st.plotly_chart(fig4)
 
         elif st.session_state['chart_type'] == 'Evolução de Vendas por Região':
-            sales_over_time_region = df.groupby([df['Date'].dt.to_period('M'), 'Dealer_Region']).size().unstack().fillna(0).reset_index()
+            sales_over_time_region = df1.groupby([df1['Date'].dt.to_period('M'), 'Dealer_Region']).size().unstack().fillna(0).reset_index()
             sales_over_time_region['Date'] = sales_over_time_region['Date'].astype(str)
 
             fig9 = px.line(sales_over_time_region, 
@@ -250,10 +251,10 @@ if uploaded_file is not None:
 
         elif st.session_state['chart_type'] == 'Séries Temporais por Região e Modelo':
             selected_region_time_series = st.selectbox('Select Region', regions)
-            selected_model_time_series = st.selectbox('Select Vehicle Model', df['Model'].unique())
+            selected_model_time_series = st.selectbox('Select Vehicle Model', df1['Model'].unique())
 
             def plot_sales(region, model):
-                sales_time = df[(df['Dealer_Region'] == region) & (df['Model'] == model)].groupby(df['Date'].dt.to_period('M')).size()
+                sales_time = df1[(df1['Dealer_Region'] == region) & (df1['Model'] == model)].groupby(df1['Date'].dt.to_period('M')).size()
                 plt.figure(figsize=(14, 8))
                 sales_time.plot(kind='line', marker='o', color='#FF7F0E', linewidth=2, markersize=6)
                 plt.title(f'Monthly Sales - Region: {region}, Model: {model}', fontsize=16)
@@ -275,7 +276,7 @@ if uploaded_file is not None:
             plot_sales(selected_region_time_series, selected_model_time_series)
 
         elif st.session_state['chart_type'] == 'Heatmap do Mix de Produtos':
-            mix_product_region = df.groupby(['Dealer_Region', 'Body Style']).size().unstack().fillna(0)
+            mix_product_region = df1.groupby(['Dealer_Region', 'Body Style']).size().unstack().fillna(0)
             plt.figure(figsize=(12, 8))
             sns.heatmap(mix_product_region, annot=True, cmap='coolwarm', fmt='g')
 
@@ -309,17 +310,17 @@ if uploaded_file is not None:
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Receita Média por Tipo de Carro':
-            avg_price_by_body = filtered_df.groupby('Body Style')['Price ($)'].mean().reset_index()
+            avg_price_by_body = filtered_df1.groupby('Body Style')['Price ($)'].mean().reset_index()
             fig2 = px.bar(avg_price_by_body, x='Body Style', y='Price ($)', title='Average Revenue by Car Type')
             st.plotly_chart(fig2)
 
         elif st.session_state['chart_type'] == 'Top 10 Empresas por Receita':
-            top_companies = filtered_df.groupby('Company')['Price ($)'].sum().reset_index().sort_values(by='Price ($)', ascending=False).head(10)
+            top_companies = filtered_df1.groupby('Company')['Price ($)'].sum().reset_index().sort_values(by='Price ($)', ascending=False).head(10)
             fig5 = px.bar(top_companies, x='Company', y='Price ($)', title='Top 10 Companies by Revenue')
             st.plotly_chart(fig5)
 
         elif st.session_state['chart_type'] == 'Distribuição de Transmissão por Motor':
-            transmission_distribution = filtered_df.groupby(['Engine', 'Transmission']).size().reset_index(name='Counts')
+            transmission_distribution = filtered_df1.groupby(['Engine', 'Transmission']).size().reset_index(name='Counts')
             fig6 = px.bar(transmission_distribution, x='Engine', y='Counts', color='Transmission', barmode='group', title='Transmission Distribution by Engine')
             st.plotly_chart(fig6)
 
@@ -342,13 +343,13 @@ if uploaded_file is not None:
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Distribuição de Gênero por Região':
-            gender_distribution = filtered_df.groupby(['Dealer_Region', 'Gender']).size().reset_index(name='Counts')
+            gender_distribution = filtered_df1.groupby(['Dealer_Region', 'Gender']).size().reset_index(name='Counts')
             fig3 = px.bar(gender_distribution, x='Dealer_Region', y='Counts', color='Gender', barmode='group', title='Gender Distribution by Region')
             st.plotly_chart(fig3)
 
         elif st.session_state['chart_type'] == 'Top 10 Modelos por Gênero':
-            top_10_male_models = filtered_df[filtered_df['Gender'] == 'Male']['Model'].value_counts().head(10)
-            top_10_female_models = filtered_df[filtered_df['Gender'] == 'Female']['Model'].value_counts().head(10)
+            top_10_male_models = filtered_df1[filtered_df1['Gender'] == 'Male']['Model'].value_counts().head(10)
+            top_10_female_models = filtered_df1[filtered_df1['Gender'] == 'Female']['Model'].value_counts().head(10)
 
             top_10_models_df = pd.DataFrame({
                 'Male': top_10_male_models,
@@ -366,4 +367,4 @@ if uploaded_file is not None:
 
             st.plotly_chart(fig7)
 else:
-    st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
+    st.warning("Por favor, carregue os dois arquivos CSV para visualizar os dados.")
