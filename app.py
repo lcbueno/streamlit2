@@ -402,8 +402,8 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
                     text=''
             )]
         
-        layout_negative = go.Layout(
-            title='Top 30 Word Frequencies in Negative Reviews',
+        layout_neutral = go.Layout(
+            title='Top 30 Word Frequencies in Positive Reviews',
             xaxis=dict(tickangle=-45)  # Ajusta a rotação dos rótulos do eixo x
         )
         
