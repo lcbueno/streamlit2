@@ -99,15 +99,15 @@ if uploaded_file_1 is not None and uploaded_file_2 is not None:
     regions = df1['Dealer_Region'].unique() if 'Dealer_Region' in df1.columns else []
     min_date = df1['Date'].min().date() if 'Date' in df1.columns else None
     max_date = df1['Date'].max().date() if 'Date' in df1.columns else None
-    selected_region = regions  # Aplica automaticamente todas as regiões
+    selected_region = regions if regions else []  # Verifica se há regiões disponíveis
     selected_dates = [min_date, max_date] if min_date and max_date else []  # Aplica automaticamente o intervalo completo
 
-    # Converter selected_dates para datetime64
+    # Converter selected_dates para datetime64 se houver datas válidas
     if selected_dates:
         selected_dates = pd.to_datetime(selected_dates)
 
-    # Filtrando o primeiro DataFrame para todas as páginas, se possível
-    if selected_region and selected_dates:
+    # Verifica se há regiões e datas selecionadas para filtrar
+    if selected_region and len(selected_dates) == 2:
         filtered_df1 = df1[(df1['Dealer_Region'].isin(selected_region)) & 
                            (df1['Date'].between(selected_dates[0], selected_dates[1]))]
     else:
