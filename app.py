@@ -403,6 +403,9 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
             bigramas = [(palavras[i], palavras[i+1]) for i in range(len(palavras)-1)]
             return bigramas
 
+        # Garantir que a coluna 'review' não contenha valores nulos e todos os valores sejam strings
+        df_nlp['review'] = df_nlp['review'].fillna("").astype(str)
+
         # Gerar bigramas para todas as reviews
         df_nlp['bigrams'] = df_nlp['review'].apply(gerar_bigrams)
         
