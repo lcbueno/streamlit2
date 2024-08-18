@@ -11,19 +11,20 @@ import pyLDAvis
 import pyLDAvis.gensim_models as gensimvis
 import plotly.io as pio
 
-import nltk
-
 # Configuração para utilizar o caminho absoluto para nltk_data
 nltk_data_path = os.path.join(os.getcwd(), 'nltk_data')
+
+# Adicionando o caminho de nltk_data diretamente
+os.environ['NLTK_DATA'] = nltk_data_path
+
+import nltk
 nltk.data.path.append(nltk_data_path)
 
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
 
-# Carregar os recursos explicitamente
-nltk.download('stopwords', download_dir=nltk_data_path)
-nltk.download('wordnet', download_dir=nltk_data_path)
-nltk.download('omw-1.4', download_dir=nltk_data_path)
+# Certifique-se de que os pacotes estão no diretório correto e carregue diretamente
+stop_words = stopwords.words('english')
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
