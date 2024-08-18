@@ -339,23 +339,30 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     # Botões no topo para escolher o gráfico
     col1, col2, col3, col4, col5, col6 = st.columns(6)
     with col1:
+        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
     with col2:
+        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Word Cloud"):
             st.session_state['chart_type'] = "Word Cloud"
     with col3:
+        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Top word frequency"):
             st.session_state['chart_type'] = "Top word frequency"
     with col4:
+        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Bigramas"):
             st.session_state['chart_type'] = "Bigramas"
     with col5:
+        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Trigramas"):
             st.session_state['chart_type'] = "Trigramas"
     with col6:
+        st.write("")  # Espaçamento para centralizar o botão
         if st.button("Top Words Sentiment Analysis"):
             st.session_state['chart_type'] = "Top Words Sentiment Analysis"  # Vincula a funcionalidade
+
         
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Top Words Sentiment Analysis":
         from nltk.sentiment import SentimentIntensityAnalyzer
