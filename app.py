@@ -316,7 +316,57 @@ if uploaded_files:
         # Página: NLP
         elif st.session_state['page'] == "NLP":
             st.title('Dashboard Yamaha - NLP Analysis')
-            st.write("Conteúdo de NLP será exibido aqui.")
 
+            # Botão no topo para escolher o gráfico de Análise de Sentimento
+            col1 = st.columns(1)
+            with col1:
+                if st.button("Sentiment Analysis"):
+                    st.session_state['chart_type'] = "Sentiment Analysis"
+
+            # Verificar se o arquivo detalhado está carregado
+            if 'detailed_car_5_brands.csv' in [f.name for f in uploaded_files]:
+                # Carregar o dataset de NLP
+                df_nlp = pd.read_csv('detailed_car_5_brands.csv', encoding='ISO-8859-1')
+
+                # Extrair os componentes do sentimento de forma correta
+                df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
+                df_nlp['sentiment_pos'] = df_sentiment_scores['pos']
+                df_nlp['sentiment_neg'] = df_sentiment_scores['neg']
+                df_nlp['sentiment_neu'] = df_sentiment_scores['neu']
+
+                # Calcular a média dos sentimentos por marca
+                brand_sentiment = df_nlp.groupby('brand_name').agg({
+                    'sentiment_pos': 'mean',
+                    'sentiment_neg': 'mean',
+                    'sentiment_neu': 'mean'
+                }).reset_index()
+
+                # Transformar os dados para um formato longo para facilitar a plotagem
+                brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
+                                                              value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
+                                                              var_name='Sentimento', value_name='Média')
+
+                # Mapeamento de nomes mais legíveis
+                brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
+                    'sentiment_pos': 'Positivo',
+                    'sentiment_neg': 'Negativo',
+                    'sentiment_neu': 'Neutro'
+                })
+
+                # Criar gráfico interativo usando Plotly
+                fig = px.bar(brand_sentiment_melted, 
+                             x='brand_name', 
+                             y='Média', 
+                             color='Sentimento', 
+                             barmode='group',
+                             labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
+                             title='Comparação de Sentimentos por Marca')
+
+                # Exibir o gráfico interativo
+                st.plotly_chart(fig)
+
+            else:
+                st.warning("O dataset 'detailed_car_5_brands.csv' não foi carregado. Por favor, faça o upload do arquivo correto.")
+        
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
