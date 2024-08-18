@@ -1,52 +1,96 @@
-import plotly.express as px
+import pandas as pd
+import streamlit as st
 import seaborn as sns
+import plotly.express as px
 import matplotlib.pyplot as plt
-import gensim
-from gensim import corpora
-from gensim.models import LdaModel
-import pyLDAvis
-import pyLDAvis.gensim_models as gensimvis
-
-import nltk
-from nltk.corpus import stopwords
-from nltk.data import find
-
-# Verificar se os stopwords estão disponíveis localmente
-try:
-    find('corpora/stopwords.zip')
-except LookupError:
-    nltk.download('stopwords')
-
-# Carregar stopwords
-stop_words = stopwords.words('english')
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
 
-            st.session_state['chart_type'] = 'Sentiment Analysis'
+# Exibir a imagem na barra lateral
+st.sidebar.image(image_path, use_column_width=True)
 
-        # Botões no topo para escolher o gráfico
-        col1, col2 = st.columns(2)
-        with col1:
-        col1 = st.columns(1)
-        with col1[0]:
-            if st.button("Sentiment Analysis"):
-                st.session_state['chart_type'] = "Sentiment Analysis"
-        with col2:
-            if st.button("Salient Terms"):
-                st.session_state['chart_type'] = "Salient Terms"
+# Estilo da barra lateral (mantendo a cor azul nos botões)
+st.markdown("""
+    <style>
+        .sidebar .sidebar-content {
+            background-color: #262730;
+            padding: 10px;
+        }
+        .sidebar .sidebar-content h2 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .stButton > button {
+            font-size: 18px;
+            color: white;
+            background-color: #1F77B4;
+            border: none;
+            padding: 10px 20px;
+            margin-bottom: 10px;
+            width: 100%;
+            text-align: left;
+            border-radius: 5px;
+        }
+        .stButton > button:hover {
+            background-color: #0073e6;
+        }
+        .stButton > button:focus {
+            background-color: #005bb5;
+        }
+        .stContainer > div {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-        # Exibir o gráfico com base na escolha do botão
-        if st.session_state['chart_type'] == 'Sentiment Analysis':
+# Sidebar para seleção da página principal
+st.sidebar.title("Analytical Dashboard")
+if st.sidebar.button("Overview Data"):
+    st.session_state['page'] = 'Overview'
+if st.sidebar.button("Regional Sales"):
+    st.session_state['page'] = 'Regional Sales'
+if st.sidebar.button("Vehicle Sales"):
+    st.session_state['page'] = 'Vendas Carros'
+if st.sidebar.button("Customer Profile"):
+    st.session_state['page'] = 'Perfil do Cliente'
 
-            # Exibir o gráfico interativo
-            st.plotly_chart(fig)
+# Botão de upload do arquivo CSV abaixo dos botões de seleção de página
+uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
 
-        elif st.session_state['chart_type'] == 'Salient Terms':
-            # Garantir que a coluna 'review' tenha valores válidos e tratar NaNs
-            df2['review'] = df2['review'].astype(str).fillna('')
+# Inicializar o estado da sessão para a página principal
+if 'page' not in st.session_state:
+    st.session_state['page'] = 'Overview Data'
+
+if uploaded_file is not None:
+    # Carregar o dataset com a codificação correta
+    df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
+
+    # Converter a coluna "Date" para datetime sem exibir a mensagem de aviso
+    df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
+
+    # Remover qualquer linha com datas inválidas (NaT)
+    df = df.dropna(subset=['Date'])
+
+    # Aplicar filtros (sem mostrar no layout)
+    regions = df['Dealer_Region'].unique()
+    min_date = df['Date'].min().date()
+    max_date = df['Date'].max().date()
+    selected_region = regions  # Aplica automaticamente todas as regiões
+    selected_dates = [min_date, max_date]  # Aplica automaticamente o intervalo completo
+
+    # Converter selected_dates para datetime64
+    selected_dates = pd.to_datetime(selected_dates)
+
+    # Filtrando o DataFrame para todas as páginas
+    filtered_df = df[(df['Dealer_Region'].isin(selected_region)) & 
+                     (df['Date'].between(selected_dates[0], selected_dates[1]))]
+
     # Página: Visão Geral Dados
-    elif st.session_state['page'] == "Overview":
+    if st.session_state['page'] == "Overview":
         st.title('Dashboard Yamaha - Overview Data')
 
         # Inicializar o estado da sessão para os gráficos se ainda não foi definido
@@ -65,42 +109,32 @@ image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.pn
             if st.button("Download Dataset"):
                 st.session_state['chart_type'] = "Download Dataset"
 
-            # Pré-processamento de texto
-            df2['processed_review'] = df2['review'].str.lower().str.split().apply(
-                lambda x: [word for word in x if word not in stop_words]
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Overview':
             st.write("DataFrame Visualization:")
-            st.dataframe(df1, width=1500, height=600)
+            st.dataframe(df, width=1500, height=600)
 
         elif st.session_state['chart_type'] == 'Unique Values':
-            unique_counts = df1.nunique()
+            unique_counts = df.nunique()
             st.write("Count unique values ​​per column:")
             st.write(unique_counts)
 
         elif st.session_state['chart_type'] == 'Download Dataset':
             st.download_button(
                 label="Download Full Dataset",
-                data=df1.to_csv(index=False),
+                data=df.to_csv(index=False),
                 file_name='dataset_completo.csv',
                 mime='text/csv',
             )
 
-            # Criar dicionário e corpus para LDA
-            dictionary = corpora.Dictionary(df2['processed_review'])
-            corpus = [dictionary.doc2bow(text) for text in df2['processed_review']]
     # Página: Vendas Regionais
     elif st.session_state['page'] == "Regional Sales":
         st.title('Dashboard Yamaha - Regional Sales')
 
-            # Rodar o modelo LDA
-            lda_model = LdaModel(corpus, num_topics=5, id2word=dictionary, passes=15)
         # Inicializar o estado da sessão para os gráficos se ainda não foi definido
         if 'chart_type' not in st.session_state:
             st.session_state['chart_type'] = 'Distribuição de Vendas por Região'
 
-            # Preparar visualização interativa com pyLDAvis
-            lda_vis = gensimvis.prepare(lda_model, corpus, dictionary)
         # Botões no topo para escolher o gráfico
         col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
@@ -119,23 +153,20 @@ image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.pn
             if st.button("Product Mix Heatmap"):
                 st.session_state['chart_type'] = "Heatmap do Mix de Produtos"
 
-            # Exibir visualização interativa
-            st.write("Visualização Interativa LDA:")
-            pyLDAvis.display(lda_vis)
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Distribuição de Vendas por Região':
-            sales_by_region = filtered_df1['Dealer_Region'].value_counts().reset_index()
+            sales_by_region = filtered_df['Dealer_Region'].value_counts().reset_index()
             sales_by_region.columns = ['Dealer_Region', 'count']
             fig1 = px.pie(sales_by_region, names='Dealer_Region', values='count', title='Sales by Region')
             st.plotly_chart(fig1)
 
         elif st.session_state['chart_type'] == 'Evolução de Vendas':
-            sales_over_time = filtered_df1.groupby('Date').size().reset_index(name='Counts')
+            sales_over_time = filtered_df.groupby('Date').size().reset_index(name='Counts')
             fig4 = px.line(sales_over_time, x='Date', y='Counts', title='Sales Evolution Over Time')
             st.plotly_chart(fig4)
 
         elif st.session_state['chart_type'] == 'Evolução de Vendas por Região':
-            sales_over_time_region = df1.groupby([df1['Date'].dt.to_period('M'), 'Dealer_Region']).size().unstack().fillna(0).reset_index()
+            sales_over_time_region = df.groupby([df['Date'].dt.to_period('M'), 'Dealer_Region']).size().unstack().fillna(0).reset_index()
             sales_over_time_region['Date'] = sales_over_time_region['Date'].astype(str)
 
             fig9 = px.line(sales_over_time_region, 
@@ -149,10 +180,10 @@ image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.pn
 
         elif st.session_state['chart_type'] == 'Séries Temporais por Região e Modelo':
             selected_region_time_series = st.selectbox('Select Region', regions)
-            selected_model_time_series = st.selectbox('Select Vehicle Model', df1['Model'].unique())
+            selected_model_time_series = st.selectbox('Select Vehicle Model', df['Model'].unique())
 
             def plot_sales(region, model):
-                sales_time = df1[(df1['Dealer_Region'] == region) & (df1['Model'] == model)].groupby(df1['Date'].dt.to_period('M')).size()
+                sales_time = df[(df['Dealer_Region'] == region) & (df['Model'] == model)].groupby(df['Date'].dt.to_period('M')).size()
                 plt.figure(figsize=(14, 8))
                 sales_time.plot(kind='line', marker='o', color='#FF7F0E', linewidth=2, markersize=6)
                 plt.title(f'Monthly Sales - Region: {region}, Model: {model}', fontsize=16)
@@ -174,7 +205,7 @@ image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.pn
             plot_sales(selected_region_time_series, selected_model_time_series)
 
         elif st.session_state['chart_type'] == 'Heatmap do Mix de Produtos':
-            mix_product_region = df1.groupby(['Dealer_Region', 'Body Style']).size().unstack().fillna(0)
+            mix_product_region = df.groupby(['Dealer_Region', 'Body Style']).size().unstack().fillna(0)
             plt.figure(figsize=(12, 8))
             sns.heatmap(mix_product_region, annot=True, cmap='coolwarm', fmt='g')
 
@@ -190,7 +221,6 @@ image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.pn
     elif st.session_state['page'] == "Vendas Carros":
         st.title('Dashboard Yamaha - Vehicle Sales')
 
-# Código restante para outras páginas...
         # Inicializar o estado da sessão para os gráficos se ainda não foi definido
         if 'chart_type' not in st.session_state:
             st.session_state['chart_type'] = 'Receita Média por Tipo de Carro'
@@ -209,17 +239,17 @@ image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.pn
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Receita Média por Tipo de Carro':
-            avg_price_by_body = filtered_df1.groupby('Body Style')['Price ($)'].mean().reset_index()
+            avg_price_by_body = filtered_df.groupby('Body Style')['Price ($)'].mean().reset_index()
             fig2 = px.bar(avg_price_by_body, x='Body Style', y='Price ($)', title='Average Revenue by Car Type')
             st.plotly_chart(fig2)
 
         elif st.session_state['chart_type'] == 'Top 10 Empresas por Receita':
-            top_companies = filtered_df1.groupby('Company')['Price ($)'].sum().reset_index().sort_values(by='Price ($)', ascending=False).head(10)
+            top_companies = filtered_df.groupby('Company')['Price ($)'].sum().reset_index().sort_values(by='Price ($)', ascending=False).head(10)
             fig5 = px.bar(top_companies, x='Company', y='Price ($)', title='Top 10 Companies by Revenue')
             st.plotly_chart(fig5)
 
         elif st.session_state['chart_type'] == 'Distribuição de Transmissão por Motor':
-            transmission_distribution = filtered_df1.groupby(['Engine', 'Transmission']).size().reset_index(name='Counts')
+            transmission_distribution = filtered_df.groupby(['Engine', 'Transmission']).size().reset_index(name='Counts')
             fig6 = px.bar(transmission_distribution, x='Engine', y='Counts', color='Transmission', barmode='group', title='Transmission Distribution by Engine')
             st.plotly_chart(fig6)
 
@@ -242,13 +272,13 @@ image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.pn
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Distribuição de Gênero por Região':
-            gender_distribution = filtered_df1.groupby(['Dealer_Region', 'Gender']).size().reset_index(name='Counts')
+            gender_distribution = filtered_df.groupby(['Dealer_Region', 'Gender']).size().reset_index(name='Counts')
             fig3 = px.bar(gender_distribution, x='Dealer_Region', y='Counts', color='Gender', barmode='group', title='Gender Distribution by Region')
             st.plotly_chart(fig3)
 
         elif st.session_state['chart_type'] == 'Top 10 Modelos por Gênero':
-            top_10_male_models = filtered_df1[filtered_df1['Gender'] == 'Male']['Model'].value_counts().head(10)
-            top_10_female_models = filtered_df1[filtered_df1['Gender'] == 'Female']['Model'].value_counts().head(10)
+            top_10_male_models = filtered_df[filtered_df['Gender'] == 'Male']['Model'].value_counts().head(10)
+            top_10_female_models = filtered_df[filtered_df['Gender'] == 'Female']['Model'].value_counts().head(10)
 
             top_10_models_df = pd.DataFrame({
                 'Male': top_10_male_models,
@@ -266,4 +296,4 @@ image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.pn
 
             st.plotly_chart(fig7)
 else:
-    st.warning("Por favor, carregue os dois arquivos CSV para visualizar os dados.")
+    st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
