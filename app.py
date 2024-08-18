@@ -308,7 +308,7 @@ if df_sales is not None and st.session_state['page'] != "NLP":
                           barmode='group')
 
             st.plotly_chart(fig7)
-        
+
 # Tratamento do dataset de NLP
 if df_nlp is not None and st.session_state['page'] == "NLP":
     st.title('Dashboard Yamaha - NLP Analysis')
@@ -361,14 +361,13 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         st.plotly_chart(fig)
     
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Word Cloud":
-        # Gerar a Word Cloud para as marcas
-        text = " ".join(review for review in df_nlp['brand_name'])
-        wordcloud = WordCloud(background_color="white", width=800, height=400).generate(text)
+        # Gerar uma nuvem de palavras para as reviews
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(" ".join(df_nlp['cleaned_review']))
 
-        # Exibir a Word Cloud
+        # Exibir a nuvem de palavras
         plt.figure(figsize=(10, 5))
         plt.imshow(wordcloud, interpolation='bilinear')
-        plt.axis("off")
+        plt.axis('off')
         plt.show()
         st.pyplot(plt)
 
