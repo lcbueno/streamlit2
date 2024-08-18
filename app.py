@@ -153,14 +153,17 @@ if df_sales is not None and st.session_state['page'] != "NLP":
         if 'chart_type' not in st.session_state:
             st.session_state['chart_type'] = 'Distribuição de Vendas por Região'
 
-        # Botões no topo para escolher o gráfico
-        col1, col2, col3, col4, col5 = st.columns(5)
+        # Primeira linha de botões para a página "Regional Sales"
+        col1, col2 = st.columns(2)
         with col1:
             if st.button("Sales by Region"):
                 st.session_state['chart_type'] = "Distribuição de Vendas por Região"
         with col2:
             if st.button("Sales Evolution Over Time"):
                 st.session_state['chart_type'] = "Evolução de Vendas"
+        
+        # Segunda linha de botões para a página "Regional Sales"
+        col3, col4, col5 = st.columns(3)
         with col3:
             if st.button("Sales Evolution by Region"):
                 st.session_state['chart_type'] = "Evolução de Vendas por Região"
@@ -170,6 +173,7 @@ if df_sales is not None and st.session_state['page'] != "NLP":
         with col5:
             if st.button("Product Mix Heatmap"):
                 st.session_state['chart_type'] = "Heatmap do Mix de Produtos"
+
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Distribuição de Vendas por Região':
