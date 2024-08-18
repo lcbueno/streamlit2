@@ -1,31 +1,8 @@
-import os
 import pandas as pd
 import streamlit as st
 import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
-import gensim
-from gensim import corpora
-from gensim.models import LdaModel
-import pyLDAvis
-import pyLDAvis.gensim_models as gensimvis
-import plotly.io as pio
-
-# Configuração para utilizar o caminho absoluto para nltk_data
-nltk_data_path = os.path.join(os.getcwd(), 'nltk_data')
-
-# Definindo o caminho do nltk_data manualmente antes de importar o NLTK
-os.environ['NLTK_DATA'] = nltk_data_path
-
-import nltk
-# Forçar o NLTK a usar o caminho do NLTK_DATA
-nltk.data.path = [nltk_data_path] + nltk.data.path
-
-from nltk.corpus import stopwords
-from nltk.corpus import wordnet
-
-# Certifique-se de que os pacotes estão no diretório correto e carregue diretamente
-stop_words = stopwords.words('english')
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -335,16 +312,13 @@ if df_sales is not None and st.session_state['page'] != "NLP":
 if df_nlp is not None and st.session_state['page'] == "NLP":
     st.title('Dashboard Yamaha - NLP Analysis')
 
-    # Botões no topo para escolher as funcionalidades
-    col1, col2 = st.columns(2)  # Correção para criar duas colunas ao invés de uma
+    # Botão no topo para escolher o gráfico de Análise de Sentimento
+    col1 = st.columns(1)  # Correção para evitar o erro: use col1 diretamente
+    col1 = col1[0]  # Certifique-se de pegar a primeira (e única) coluna
     with col1:
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
-    with col2:
-        if st.button("Salient Terms"):
-            st.session_state['chart_type'] = "Salient Terms"
 
-    # Exibir análise de sentimentos
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
         # Extrair os componentes do sentimento de forma correta
         df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
@@ -382,32 +356,6 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
 
         # Exibir o gráfico interativo
         st.plotly_chart(fig)
-
-    # Exibir termos salientes com LDA
-    if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Salient Terms":
-        # Certificar-se de que os pacotes necessários estão disponíveis
-        stop_words = stopwords.words('english')
-
-        # Garantir que a coluna 'review' tenha valores válidos e tratar NaNs
-        df_nlp['review'] = df_nlp['review'].astype(str).fillna('')
-
-        # Pré-processamento de texto
-        df_nlp['processed_review'] = df_nlp['review'].str.lower().str.split().apply(
-            lambda x: [word for word in x if word not in stop_words]
-        )
-
-        # Criar dicionário e corpus para LDA
-        dictionary = corpora.Dictionary(df_nlp['processed_review'])
-        corpus = [dictionary.doc2bow(text) for text in df_nlp['processed_review']]
-
-        # Rodar o modelo LDA
-        lda_model = LdaModel(corpus, num_topics=5, id2word=dictionary, passes=15)
-
-        # Preparar visualização interativa com pyLDAvis
-        lda_vis = gensimvis.prepare(lda_model, corpus, dictionary)
-
-        # Exibir visualização interativa
-        pyLDAvis.display(lda_vis)
 
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
