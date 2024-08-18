@@ -9,11 +9,9 @@ from collections import Counter
 from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
 
-# Verificar se o léxico vader já está disponível e, se necessário, fazer o download
-try:
-    nltk.data.find('sentiment/vader_lexicon.zip')
-except LookupError:
-    nltk.download('vader_lexicon')
+# Assumir que o léxico vader já está disponível sem tentar baixá-lo
+# Se o léxico não estiver disponível, o código falhará na máquina do usuário, 
+# e ele precisará garantir que o pacote esteja instalado antes de rodar o script.
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
