@@ -9,6 +9,12 @@ from nltk import word_tokenize
 from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
 
+# Verifique se o vader_lexicon está instalado, caso contrário, continue sem ele.
+try:
+    nltk.data.find('sentiment/vader_lexicon.zip')
+except LookupError:
+    nltk.download('vader_lexicon', quiet=True)
+
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
 
@@ -231,7 +237,7 @@ if df_sales is not None and st.session_state['page'] != "NLP":
             plt.xlabel('Body Style', fontsize=14)
             plt.ylabel('Reseller Region', fontsize=14)
             plt.xticks(fontsize=12)
-            plt.yticks(fontsize(12))
+            plt.yticks(fontsize=12)
             st.pyplot(plt)
 
     # Página: Vendas Carros
@@ -382,8 +388,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         st.pyplot(plt)
     
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Top word frequency":
-        # Garantir que o nltk esteja configurado
-        nltk.download('vader_lexicon')
+        # Certifique-se de que o vader_lexicon está disponível
         sia = SentimentIntensityAnalyzer()
         df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
         df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(lambda x: 'Positive' if x >= 0.05 else ('Negative' if x <= -0.05 else 'Neutral'))
