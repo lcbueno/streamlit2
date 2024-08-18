@@ -337,7 +337,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     ]
 
     # Botões no topo para escolher o gráfico
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
     with col1:
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
@@ -356,6 +356,10 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     with col6:
         if st.button("Top Words Sentiment Analysis"):
             st.session_state['chart_type'] = "Top Words Sentiment Analysis"  # Vincula a funcionalidade
+    with col7:
+        if st.button("Relevante Terms"):
+            st.session_state['chart_type'] = "Relevante Terms"  # Adiciona o botão sem funcionalidade
+
         
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Top Words Sentiment Analysis":
         from nltk.sentiment import SentimentIntensityAnalyzer
