@@ -3,7 +3,6 @@ import streamlit as st
 import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
-from wordcloud import WordCloud
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -83,7 +82,7 @@ if uploaded_files:
             df = df.dropna(subset=['Date'])
             df_sales = df
         # Verificar se o arquivo carregado é o dataset de NLP
-        elif 'review' in df.columns:  # Verifica se existe a coluna de reviews para realizar a análise NLP
+        elif 'sentiment score' in df.columns and 'brand_name' in df.columns:
             df_nlp = df
         else:
             st.warning(f"O arquivo {uploaded_file.name} não contém as colunas necessárias para análise e será ignorado.")
@@ -313,81 +312,50 @@ if df_sales is not None and st.session_state['page'] != "NLP":
 if df_nlp is not None and st.session_state['page'] == "NLP":
     st.title('Dashboard Yamaha - NLP Analysis')
 
-    # Botões no topo para escolher o gráfico de Análise de Sentimento e Word Cloud
-    col1, col2 = st.columns(2)
+    # Botão no topo para escolher o gráfico de Análise de Sentimento
+    col1 = st.columns(1)  # Correção para evitar o erro: use col1 diretamente
+    col1 = col1[0]  # Certifique-se de pegar a primeira (e única) coluna
     with col1:
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
-    with col2:
-        if st.button("Word Cloud"):
-            st.session_state['chart_type'] = "Word Cloud"
 
-    if 'chart_type' in st.session_state:
-        if st.session_state['chart_type'] == "Sentiment Analysis":
-            # Análise de sentimentos simples baseada em regras (apenas para simulação)
-            def classify_sentiment(review):
-                review = review.lower()
-                if any(word in review for word in ['good', 'great', 'excellent']):
-                    return 'Positive'
-                elif any(word in review for word in ['bad', 'poor', 'terrible']):
-                    return 'Negative'
-                else:
-                    return 'Neutral'
+    if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
+        # Extrair os componentes do sentimento de forma correta
+        df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
+        df_nlp['sentiment_pos'] = df_sentiment_scores['pos']
+        df_nlp['sentiment_neg'] = df_sentiment_scores['neg']
+        df_nlp['sentiment_neu'] = df_sentiment_scores['neu']
 
-            df_nlp['sentiment_category'] = df_nlp['review'].apply(classify_sentiment)
+        # Calcular a média dos sentimentos por marca
+        brand_sentiment = df_nlp.groupby('brand_name').agg({
+            'sentiment_pos': 'mean',
+            'sentiment_neg': 'mean',
+            'sentiment_neu': 'mean'
+        }).reset_index()
 
-            # Calcular a média dos sentimentos por marca
-            brand_sentiment = df_nlp.groupby('brand_name').agg({
-                'sentiment_category': lambda x: x.mode()[0]  # Calcula o sentimento mais comum (moda)
-            }).reset_index()
+        # Transformar os dados para um formato longo para facilitar a plotagem
+        brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
+                                                      value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
+                                                      var_name='Sentimento', value_name='Média')
 
-            # Transformar os dados para um formato longo para facilitar a plotagem
-            brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
-                                                          value_vars=['sentiment_category'],
-                                                          var_name='Sentimento', value_name='Média')
+        # Mapeamento de nomes mais legíveis
+        brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
+            'sentiment_pos': 'Positivo',
+            'sentiment_neg': 'Negativo',
+            'sentiment_neu': 'Neutro'
+        })
 
-            # Criar gráfico interativo usando Plotly
-            fig = px.bar(brand_sentiment_melted, 
-                         x='brand_name', 
-                         y='Média', 
-                         color='Sentimento', 
-                         barmode='group',
-                         labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
-                         title='Comparação de Sentimentos por Marca')
+        # Criar gráfico interativo usando Plotly
+        fig = px.bar(brand_sentiment_melted, 
+                     x='brand_name', 
+                     y='Média', 
+                     color='Sentimento', 
+                     barmode='group',
+                     labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
+                     title='Comparação de Sentimentos por Marca')
 
-            # Exibir o gráfico interativo
-            st.plotly_chart(fig)
+        # Exibir o gráfico interativo
+        st.plotly_chart(fig)
 
-        elif st.session_state['chart_type'] == "Word Cloud":
-            # Limpeza básica do texto para cada categoria
-            df_nlp['cleaned_review'] = df_nlp['review'].str.lower().str.replace('[^\w\s]', '', regex=True)
-
-            # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
-            df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
-            df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']
-
-            # Gerar Word Cloud para sentimentos negativos
-            negative_text = ' '.join(df_negative['brand_name'].tolist())
-            wordcloud_negative = WordCloud(width=400, height=400, background_color='white').generate(negative_text)
-
-            # Gerar Word Cloud para sentimentos neutros (positivos)
-            neutral_text = ' '.join(df_neutral['brand_name'].tolist())
-            wordcloud_neutral = WordCloud(width=400, height=400, background_color='white').generate(neutral_text)
-
-            # Exibir as duas word clouds lado a lado
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write("Negative Sentiment")
-                plt.figure(figsize=(5, 5))
-                plt.imshow(wordcloud_negative, interpolation='bilinear')
-                plt.axis('off')
-                st.pyplot(plt)
-            
-            with col2:
-                st.write("Positive Sentiment")
-                plt.figure(figsize=(5, 5))
-                plt.imshow(wordcloud_neutral, interpolation='bilinear')
-                plt.axis('off')
-                st.pyplot(plt)
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
