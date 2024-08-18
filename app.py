@@ -74,25 +74,33 @@ if uploaded_file is not None:
     # Carregar o dataset com a codificação correta
     df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
 
-    # Converter a coluna "Date" para datetime sem exibir a mensagem de aviso
-    df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
+    # Verificar se a coluna 'Date' existe no dataframe
+    if 'Date' in df.columns:
+        # Converter a coluna "Date" para datetime sem exibir a mensagem de aviso
+        df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
 
-    # Remover qualquer linha com datas inválidas (NaT)
-    df = df.dropna(subset=['Date'])
+        # Remover qualquer linha com datas inválidas (NaT)
+        df = df.dropna(subset=['Date'])
+    else:
+        st.error("A coluna 'Date' não foi encontrada no arquivo CSV. Verifique o arquivo e tente novamente.")
 
     # Aplicar filtros (sem mostrar no layout)
-    regions = df['Dealer_Region'].unique()
-    min_date = df['Date'].min().date()
-    max_date = df['Date'].max().date()
+    regions = df['Dealer_Region'].unique() if 'Dealer_Region' in df.columns else []
+    min_date = df['Date'].min().date() if 'Date' in df.columns else None
+    max_date = df['Date'].max().date() if 'Date' in df.columns else None
     selected_region = regions  # Aplica automaticamente todas as regiões
-    selected_dates = [min_date, max_date]  # Aplica automaticamente o intervalo completo
+    selected_dates = [min_date, max_date] if min_date and max_date else []  # Aplica automaticamente o intervalo completo
 
     # Converter selected_dates para datetime64
-    selected_dates = pd.to_datetime(selected_dates)
+    if selected_dates:
+        selected_dates = pd.to_datetime(selected_dates)
 
-    # Filtrando o DataFrame para todas as páginas
-    filtered_df = df[(df['Dealer_Region'].isin(selected_region)) & 
-                     (df['Date'].between(selected_dates[0], selected_dates[1]))]
+    # Filtrando o DataFrame para todas as páginas, se possível
+    if selected_region and selected_dates:
+        filtered_df = df[(df['Dealer_Region'].isin(selected_region)) & 
+                         (df['Date'].between(selected_dates[0], selected_dates[1]))]
+    else:
+        filtered_df = df
 
     # Página: NLP
     if st.session_state['page'] == "NLP":
@@ -110,42 +118,46 @@ if uploaded_file is not None:
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Sentiment Analysis':
-            # Extrair os componentes do sentimento de forma correta
-            df_sentiment_scores = pd.json_normalize(df['sentiment score'].apply(eval))
-            df['sentiment_pos'] = df_sentiment_scores['pos']
-            df['sentiment_neg'] = df_sentiment_scores['neg']
-            df['sentiment_neu'] = df_sentiment_scores['neu']
+            # Verifique se a coluna 'sentiment score' existe
+            if 'sentiment score' in df.columns:
+                # Extrair os componentes do sentimento de forma correta
+                df_sentiment_scores = pd.json_normalize(df['sentiment score'].apply(eval))
+                df['sentiment_pos'] = df_sentiment_scores['pos']
+                df['sentiment_neg'] = df_sentiment_scores['neg']
+                df['sentiment_neu'] = df_sentiment_scores['neu']
 
-            # Calcular a média dos sentimentos por marca
-            brand_sentiment = df.groupby('brand_name').agg({
-                'sentiment_pos': 'mean',
-                'sentiment_neg': 'mean',
-                'sentiment_neu': 'mean'
-            }).reset_index()
+                # Calcular a média dos sentimentos por marca
+                brand_sentiment = df.groupby('brand_name').agg({
+                    'sentiment_pos': 'mean',
+                    'sentiment_neg': 'mean',
+                    'sentiment_neu': 'mean'
+                }).reset_index()
 
-            # Transformar os dados para um formato longo para facilitar a plotagem
-            brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
-                                                          value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
-                                                          var_name='Sentimento', value_name='Média')
+                # Transformar os dados para um formato longo para facilitar a plotagem
+                brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
+                                                              value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
+                                                              var_name='Sentimento', value_name='Média')
 
-            # Mapeamento de nomes mais legíveis
-            brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
-                'sentiment_pos': 'Positivo',
-                'sentiment_neg': 'Negativo',
-                'sentiment_neu': 'Neutro'
-            })
+                # Mapeamento de nomes mais legíveis
+                brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
+                    'sentiment_pos': 'Positivo',
+                    'sentiment_neg': 'Negativo',
+                    'sentiment_neu': 'Neutro'
+                })
 
-            # Criar gráfico interativo usando Plotly
-            fig = px.bar(brand_sentiment_melted, 
-                         x='brand_name', 
-                         y='Média', 
-                         color='Sentimento', 
-                         barmode='group',
-                         labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
-                         title='Comparação de Sentimentos por Marca')
+                # Criar gráfico interativo usando Plotly
+                fig = px.bar(brand_sentiment_melted, 
+                             x='brand_name', 
+                             y='Média', 
+                             color='Sentimento', 
+                             barmode='group',
+                             labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
+                             title='Comparação de Sentimentos por Marca')
 
-            # Exibir o gráfico interativo
-            st.plotly_chart(fig)
+                # Exibir o gráfico interativo
+                st.plotly_chart(fig)
+            else:
+                st.error("A coluna 'sentiment score' não foi encontrada no arquivo CSV. Verifique o arquivo e tente novamente.")
 
     # Página: Visão Geral Dados
     elif st.session_state['page'] == "Overview":
