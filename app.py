@@ -387,10 +387,10 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         word_counts.columns = ['Word', 'Count']
 
         # Selecionar as top 10 palavras mais frequentes
-        top_10_words = word_counts.head(10)
+        top_20_words = word_counts.head(20)
 
         # Criar gráfico de barras interativo
-        fig = px.bar(top_10_words, x='Word', y='Count', title='Top 10 Words', labels={'Word': 'Word', 'Count': 'Count'})
+        fig = px.bar(top_20_words, x='Word', y='Count', title='Top 20 Words', labels={'Word': 'Word', 'Count': 'Count'})
         st.plotly_chart(fig)
 
 else:
