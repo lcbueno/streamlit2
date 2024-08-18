@@ -6,5 +6,5 @@ matplotlib
 matplotlib
 nltk
 vaderSentiment
-vader_lexicon
+
 
