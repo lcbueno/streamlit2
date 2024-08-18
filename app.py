@@ -83,7 +83,7 @@ if uploaded_files:
             df = df.dropna(subset=['Date'])
             df_sales = df
         # Verificar se o arquivo carregado é o dataset de NLP
-        elif 'sentiment score' in df.columns and 'brand_name' in df.columns:
+        elif 'review' in df.columns:
             df_nlp = df
         else:
             st.warning(f"O arquivo {uploaded_file.name} não contém as colunas necessárias para análise e será ignorado.")
@@ -368,7 +368,6 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         plt.figure(figsize=(10, 5))
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.axis('off')
-        plt.show()
         st.pyplot(plt)
 
 else:
