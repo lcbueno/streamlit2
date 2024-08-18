@@ -6,15 +6,6 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from nltk import ngrams
 from collections import Counter
-from nltk.sentiment import SentimentIntensityAnalyzer
-import nltk
-
-# Verifique se o léxico está disponível e pronto para ser usado
-try:
-    sia = SentimentIntensityAnalyzer()
-except LookupError:
-    st.error("O léxico vader_lexicon não foi encontrado. Por favor, certifique-se de que ele esteja instalado no ambiente antes de executar o aplicativo.")
-    st.stop()
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -98,6 +89,29 @@ if uploaded_files:
             df_nlp = df
         else:
             st.warning(f"O arquivo {uploaded_file.name} não contém as colunas necessárias para análise e será ignorado.")
+
+# Função simples de análise de sentimentos baseada em palavras-chave
+def simple_sentiment_analysis(review):
+    positive_words = ['good', 'great', 'excellent', 'amazing', 'fantastic', 'love']
+    negative_words = ['bad', 'terrible', 'awful', 'hate', 'worst', 'poor']
+
+    review = review.lower()  # Converter para minúsculas
+    sentiment_score = 0
+
+    for word in positive_words:
+        if word in review:
+            sentiment_score += 1
+
+    for word in negative_words:
+        if word in review:
+            sentiment_score -= 1
+
+    if sentiment_score > 0:
+        return 'Positive'
+    elif sentiment_score < 0:
+        return 'Negative'
+    else:
+        return 'Neutral'
 
 # Tratamento do dataset de vendas
 if df_sales is not None and st.session_state['page'] != "NLP":
@@ -338,45 +352,14 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
 
     # Adicionar o processamento necessário para criar a coluna 'sentiment_category'
     if 'sentiment_category' not in df_nlp.columns:
-        sia = SentimentIntensityAnalyzer()
-        df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
-        df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(
-            lambda x: 'Positive' if x >= 0.05 else ('Negative' if x <= -0.05 else 'Neutral')
-        )
+        df_nlp['sentiment_category'] = df_nlp['review'].apply(simple_sentiment_analysis)
 
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
-        # Extrair os componentes do sentimento de forma correta
-        df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
-        df_nlp['sentiment_pos'] = df_sentiment_scores['pos']
-        df_nlp['sentiment_neg'] = df_sentiment_scores['neg']
-        df_nlp['sentiment_neu'] = df_sentiment_scores['neu']
-
         # Calcular a média dos sentimentos por marca
-        brand_sentiment = df_nlp.groupby('brand_name').agg({
-            'sentiment_pos': 'mean',
-            'sentiment_neg': 'mean',
-            'sentiment_neu': 'mean'
-        }).reset_index()
-
-        # Transformar os dados para um formato longo para facilitar a plotagem
-        brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
-                                                      value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
-                                                      var_name='Sentimento', value_name='Média')
-
-        # Mapeamento de nomes mais legíveis
-        brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
-            'sentiment_pos': 'Positivo',
-            'sentiment_neg': 'Negativo',
-            'sentiment_neu': 'Neutro'
-        })
-
+        brand_sentiment = df_nlp.groupby('brand_name')['sentiment_category'].value_counts(normalize=True).unstack().fillna(0)
+        
         # Criar gráfico interativo usando Plotly
-        fig = px.bar(brand_sentiment_melted, 
-                     x='brand_name', 
-                     y='Média', 
-                     color='Sentimento', 
-                     barmode='group',
-                     labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
+        fig = px.bar(brand_sentiment, 
                      title='Comparação de Sentimentos por Marca')
 
         # Exibir o gráfico interativo
