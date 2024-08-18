@@ -10,13 +10,13 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
 import plotly.express as px
 
-# Caminho para a imagem
+# Path to the image
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
 
-# Exibir a imagem na barra lateral
+# Display the image in the sidebar
 st.sidebar.image(image_path, use_column_width=True)
 
-# Estilo da barra lateral (mantendo a cor azul nos botões)
+# Sidebar style (keeping the blue color on buttons)
 st.markdown("""
     <style>
         .sidebar .sidebar-content {
@@ -53,69 +53,69 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Sidebar para seleção da página principal
+# Sidebar for main page selection
 st.sidebar.title("Analytical Dashboard")
 if st.sidebar.button("Overview Data"):
     st.session_state['page'] = 'Overview'
 if st.sidebar.button("Regional Sales"):
     st.session_state['page'] = 'Regional Sales'
 if st.sidebar.button("Vehicle Sales"):
-    st.session_state['page'] = 'Vendas Carros'
+    st.session_state['page'] = 'Vehicle Sales'
 if st.sidebar.button("Customer Profile"):
-    st.session_state['page'] = 'Perfil do Cliente'
+    st.session_state['page'] = 'Customer Profile'
 if st.sidebar.button("NLP"):
-    st.session_state['page'] = 'NLP'  # Adiciona a funcionalidade do botão NLP
+    st.session_state['page'] = 'NLP'  # Adds the NLP button functionality
 
-# Botão de upload do arquivo CSV abaixo dos botões de seleção de página
+# CSV file upload button below the page selection buttons
 uploaded_files = st.sidebar.file_uploader("Choose CSV files", type="csv", accept_multiple_files=True)
 
-# Inicializar o estado da sessão para a página principal
+# Initialize the session state for the main page
 if 'page' not in st.session_state:
     st.session_state['page'] = 'Overview Data'
 
-# Variáveis para armazenar os DataFrames processados
+# Variables to store processed DataFrames
 df_sales = None
 df_nlp = None
 
-# Processar os arquivos CSV carregados
+# Process the uploaded CSV files
 if uploaded_files:
     for uploaded_file in uploaded_files:
         df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
         
-        # Verifica se o arquivo contém a coluna 'Date' para o dataset de vendas
+        # Check if the file contains the 'Date' column for the sales dataset
         if 'Date' in df.columns:
             df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
             df = df.dropna(subset=['Date'])
             df_sales = df
-        # Verificar se o arquivo carregado é o dataset de NLP
+        # Check if the uploaded file is the NLP dataset
         elif 'review' in df.columns:
             df_nlp = df
         else:
-            st.warning(f"O arquivo {uploaded_file.name} não contém as colunas necessárias para análise e será ignorado.")
+            st.warning(f"The file {uploaded_file.name} does not contain the necessary columns for analysis and will be ignored.")
 
-# Tratamento do dataset de vendas
+# Sales dataset processing
 if df_sales is not None and st.session_state['page'] != "NLP":
-    # Aplicar filtros (sem mostrar no layout)
+    # Apply filters (without showing in the layout)
     regions = df_sales['Dealer_Region'].unique()
     min_date = df_sales['Date'].min().date()
     max_date = df_sales['Date'].max().date()
-    selected_region = regions  # Aplica automaticamente todas as regiões
-    selected_dates = [min_date, max_date]  # Aplica automaticamente o intervalo completo
+    selected_region = regions  # Automatically apply all regions
+    selected_dates = [min_date, max_date]  # Automatically apply the full range
 
     selected_dates = pd.to_datetime(selected_dates)
 
     filtered_df = df_sales[(df_sales['Dealer_Region'].isin(selected_region)) & 
                            (df_sales['Date'].between(selected_dates[0], selected_dates[1]))]
 
-    # Página: Visão Geral Dados
+    # Page: Overview Data
     if st.session_state['page'] == "Overview":
         st.title('Dashboard Yamaha - Overview Data')
 
-        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        # Initialize the session state for charts if not yet defined
         if 'chart_type' not in st.session_state:
             st.session_state['chart_type'] = 'Overview'
 
-        # Botões no topo para escolher o gráfico
+        # Buttons at the top to choose the chart
         col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("Overview"):
@@ -127,67 +127,67 @@ if df_sales is not None and st.session_state['page'] != "NLP":
             if st.button("Download Dataset"):
                 st.session_state['chart_type'] = "Download Dataset"
 
-        # Exibir o gráfico com base na escolha do botão
+        # Display the chart based on the button choice
         if st.session_state['chart_type'] == 'Overview':
             st.write("DataFrame Visualization:")
             st.dataframe(filtered_df, width=1500, height=600)
 
         elif st.session_state['chart_type'] == 'Unique Values':
             unique_counts = filtered_df.nunique()
-            st.write("Count unique values ​​per column:")
+            st.write("Count unique values per column:")
             st.write(unique_counts)
 
         elif st.session_state['chart_type'] == 'Download Dataset':
             st.download_button(
                 label="Download Full Dataset",
                 data=filtered_df.to_csv(index=False),
-                file_name='dataset_completo.csv',
+                file_name='full_dataset.csv',
                 mime='text/csv',
             )
 
-    # Página: Vendas Regionais
+    # Page: Regional Sales
     elif st.session_state['page'] == "Regional Sales":
         st.title('Dashboard Yamaha - Regional Sales')
 
-        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        # Initialize the session state for charts if not yet defined
         if 'chart_type' not in st.session_state:
-            st.session_state['chart_type'] = 'Distribuição de Vendas por Região'
+            st.session_state['chart_type'] = 'Sales Distribution by Region'
 
-        # Primeira linha de botões para a página "Regional Sales"
+        # First row of buttons for the "Regional Sales" page
         col1, col2 = st.columns(2)
         with col1:
             if st.button("Sales by Region"):
-                st.session_state['chart_type'] = "Distribuição de Vendas por Região"
+                st.session_state['chart_type'] = "Sales Distribution by Region"
         with col2:
             if st.button("Sales Evolution Over Time"):
-                st.session_state['chart_type'] = "Evolução de Vendas"
+                st.session_state['chart_type'] = "Sales Evolution"
         
-        # Segunda linha de botões para a página "Regional Sales"
+        # Second row of buttons for the "Regional Sales" page
         col3, col4, col5 = st.columns(3)
         with col3:
             if st.button("Sales Evolution by Region"):
-                st.session_state['chart_type'] = "Evolução de Vendas por Região"
+                st.session_state['chart_type'] = "Sales Evolution by Region"
         with col4:
             if st.button("Region x Vehicle Model"):
-                st.session_state['chart_type'] = "Séries Temporais por Região e Modelo"
+                st.session_state['chart_type'] = "Time Series by Region and Model"
         with col5:
             if st.button("Product Mix Heatmap"):
-                st.session_state['chart_type'] = "Heatmap do Mix de Produtos"
+                st.session_state['chart_type'] = "Product Mix Heatmap"
 
 
-        # Exibir o gráfico com base na escolha do botão
-        if st.session_state['chart_type'] == 'Distribuição de Vendas por Região':
+        # Display the chart based on the button choice
+        if st.session_state['chart_type'] == 'Sales Distribution by Region':
             sales_by_region = filtered_df['Dealer_Region'].value_counts().reset_index()
             sales_by_region.columns = ['Dealer_Region', 'count']
             fig1 = px.pie(sales_by_region, names='Dealer_Region', values='count', title='Sales by Region')
             st.plotly_chart(fig1)
 
-        elif st.session_state['chart_type'] == 'Evolução de Vendas':
+        elif st.session_state['chart_type'] == 'Sales Evolution':
             sales_over_time = filtered_df.groupby('Date').size().reset_index(name='Counts')
             fig4 = px.line(sales_over_time, x='Date', y='Counts', title='Sales Evolution Over Time')
             st.plotly_chart(fig4)
 
-        elif st.session_state['chart_type'] == 'Evolução de Vendas por Região':
+        elif st.session_state['chart_type'] == 'Sales Evolution by Region':
             sales_over_time_region = filtered_df.groupby([filtered_df['Date'].dt.to_period('M'), 'Dealer_Region']).size().unstack().fillna(0).reset_index()
             sales_over_time_region['Date'] = sales_over_time_region['Date'].astype(str)
 
@@ -200,7 +200,7 @@ if df_sales is not None and st.session_state['page'] != "NLP":
 
             st.plotly_chart(fig9)
 
-        elif st.session_state['chart_type'] == 'Séries Temporais por Região e Modelo':
+        elif st.session_state['chart_type'] == 'Time Series by Region and Model':
             selected_region_time_series = st.selectbox('Select Region', regions)
             selected_model_time_series = st.selectbox('Select Vehicle Model', filtered_df['Model'].unique())
 
@@ -209,7 +209,7 @@ if df_sales is not None and st.session_state['page'] != "NLP":
                 plt.figure(figsize=(14, 8))
                 sales_time.plot(kind='line', marker='o', color='#FF7F0E', linewidth=2, markersize=6)
                 plt.title(f'Monthly Sales - Region: {region}, Model: {model}', fontsize=16)
-                plt.xlabel('Mês', fontsize=14)
+                plt.xlabel('Month', fontsize=14)
                 plt.ylabel('Number of Sales', fontsize=14)
                 plt.grid(True, color='gray', linestyle='--', linewidth=0.5)
                 plt.xticks(fontsize=12)
@@ -226,12 +226,12 @@ if df_sales is not None and st.session_state['page'] != "NLP":
 
             plot_sales(selected_region_time_series, selected_model_time_series)
 
-        elif st.session_state['chart_type'] == 'Heatmap do Mix de Produtos':
+        elif st.session_state['chart_type'] == 'Product Mix Heatmap':
             mix_product_region = filtered_df.groupby(['Dealer_Region', 'Body Style']).size().unstack().fillna(0)
             plt.figure(figsize=(12, 8))
             sns.heatmap(mix_product_region, annot=True, cmap='coolwarm', fmt='g')
 
-            # Assegurando que as legendas e rótulos sejam visíveis
+            # Ensure that legends and labels are visible
             plt.title('Product Mix by Region (Body Style)', fontsize=16)
             plt.xlabel('Body Style', fontsize=14)
             plt.ylabel('Reseller Region', fontsize=14)
@@ -247,73 +247,73 @@ if df_sales is not None and st.session_state['page'] != "NLP":
             plt.gca().tick_params(axis='y', colors='black')
             st.pyplot(plt)
 
-    # Página: Vendas Carros
-    elif st.session_state['page'] == "Vendas Carros":
+    # Page: Vehicle Sales
+    elif st.session_state['page'] == "Vehicle Sales":
         st.title('Dashboard Yamaha - Vehicle Sales')
 
-        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        # Initialize the session state for charts if not yet defined
         if 'chart_type' not in st.session_state:
-            st.session_state['chart_type'] = 'Receita Média por Tipo de Carro'
+            st.session_state['chart_type'] = 'Average Revenue by Car Type'
 
-        # Primeira linha de botões para a página "Vehicle Sales"
+        # First row of buttons for the "Vehicle Sales" page
         col1, col2 = st.columns(2)
         with col1:
             if st.button("Average Revenue by Car Type"):
-                st.session_state['chart_type'] = "Receita Média por Tipo de Carro"
+                st.session_state['chart_type'] = "Average Revenue by Car Type"
         with col2:
             if st.button("Top 10 Companies by Revenue"):
-                st.session_state['chart_type'] = "Top 10 Empresas por Receita"
+                st.session_state['chart_type'] = "Top 10 Companies by Revenue"
         
-        # Segunda linha de botões para a página "Vehicle Sales"
+        # Second row of buttons for the "Vehicle Sales" page
         col3 = st.columns(1)
         with col3[0]:
             if st.button("Transmission Distribution by Engine"):
-                st.session_state['chart_type'] = "Distribuição de Transmissão por Motor"
+                st.session_state['chart_type'] = "Transmission Distribution by Engine"
 
 
-        # Exibir o gráfico com base na escolha do botão
-        if st.session_state['chart_type'] == 'Receita Média por Tipo de Carro':
+        # Display the chart based on the button choice
+        if st.session_state['chart_type'] == 'Average Revenue by Car Type':
             avg_price_by_body = filtered_df.groupby('Body Style')['Price ($)'].mean().reset_index()
             fig2 = px.bar(avg_price_by_body, x='Body Style', y='Price ($)', title='Average Revenue by Car Type')
             st.plotly_chart(fig2)
 
-        elif st.session_state['chart_type'] == 'Top 10 Empresas por Receita':
+        elif st.session_state['chart_type'] == 'Top 10 Companies by Revenue':
             top_companies = filtered_df.groupby('Company')['Price ($)'].sum().reset_index().sort_values(by='Price ($)', ascending=False).head(10)
             fig5 = px.bar(top_companies, x='Company', y='Price ($)', title='Top 10 Companies by Revenue')
             st.plotly_chart(fig5)
 
-        elif st.session_state['chart_type'] == 'Distribuição de Transmissão por Motor':
+        elif st.session_state['chart_type'] == 'Transmission Distribution by Engine':
             transmission_distribution = filtered_df.groupby(['Engine', 'Transmission']).size().reset_index(name='Counts')
             fig6 = px.bar(transmission_distribution, x='Engine', y='Counts', color='Transmission', barmode='group', title='Transmission Distribution by Engine')
             st.plotly_chart(fig6)
 
-    # Página: Perfil do Cliente
-    elif st.session_state['page'] == "Perfil do Cliente":
+    # Page: Customer Profile
+    elif st.session_state['page'] == "Customer Profile":
         st.title('Dashboard Yamaha - Customer Profile')
 
-        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        # Initialize the session state for charts if not yet defined
         if 'chart_type' not in st.session_state:
-            st.session_state['chart_type'] = 'Distribuição de Gênero por Região'
+            st.session_state['chart_type'] = 'Gender Distribution by Region'
 
-        # Primeira linha de botões para a página "Customer Profile"
+        # First row of buttons for the "Customer Profile" page
         col1 = st.columns(1)
         with col1[0]:
             if st.button("Gender Distribution by Region"):
-                st.session_state['chart_type'] = "Distribuição de Gênero por Região"
+                st.session_state['chart_type'] = "Gender Distribution by Region"
         
-        # Segunda linha de botões para a página "Customer Profile"
+        # Second row of buttons for the "Customer Profile" page
         col2 = st.columns(1)
         with col2[0]:
             if st.button("Top 10 Models by Gender"):
-                st.session_state['chart_type'] = "Top 10 Modelos por Gênero"
+                st.session_state['chart_type'] = "Top 10 Models by Gender"
 
-        # Exibir o gráfico com base na escolha do botão
-        if st.session_state['chart_type'] == 'Distribuição de Gênero por Região':
+        # Display the chart based on the button choice
+        if st.session_state['chart_type'] == 'Gender Distribution by Region':
             gender_distribution = filtered_df.groupby(['Dealer_Region', 'Gender']).size().reset_index(name='Counts')
             fig3 = px.bar(gender_distribution, x='Dealer_Region', y='Counts', color='Gender', barmode='group', title='Gender Distribution by Region')
             st.plotly_chart(fig3)
 
-        elif st.session_state['chart_type'] == 'Top 10 Modelos por Gênero':
+        elif st.session_state['chart_type'] == 'Top 10 Models by Gender':
             top_10_male_models = filtered_df[filtered_df['Gender'] == 'Male']['Model'].value_counts().head(10)
             top_10_female_models = filtered_df[filtered_df['Gender'] == 'Female']['Model'].value_counts().head(10)
 
@@ -333,13 +333,13 @@ if df_sales is not None and st.session_state['page'] != "NLP":
 
             st.plotly_chart(fig7)
 
-# Tratamento do dataset de NLP
+# NLP dataset processing
 if df_nlp is not None and st.session_state['page'] == "NLP":
     st.title('Dashboard Yamaha - NLP Analysis')
 
-    # Paleta de cores personalizada
+    # Custom color palette
     colorscale = [
-        [0.0, "rgb(0, 0, 139)"],   # Navy (equivalente ao roxo escuro)
+        [0.0, "rgb(0, 0, 139)"],   # Navy (equivalent to dark purple)
         [0.2, "rgb(75, 0, 130)"],  # Indigo
         [0.4, "rgb(138, 43, 226)"], # BlueViolet
         [0.6, "rgb(255, 0, 255)"],  # Magenta
@@ -347,7 +347,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         [1.0, "rgb(255, 255, 0)"],  # Yellow
     ]
 
-    # Primeira linha de botões
+    # First row of buttons
     col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("Sentiment Analysis"):
@@ -359,14 +359,14 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         if st.button("Top word frequency"):
             st.session_state['chart_type'] = "Top word frequency"
     
-    # Segunda linha de botões
+    # Second row of buttons
     col4, col5, col6 = st.columns(3)
     with col4:
-        if st.button("Bigramas"):
-            st.session_state['chart_type'] = "Bigramas"
+        if st.button("Bigrams"):
+            st.session_state['chart_type'] = "Bigrams"
     with col5:
-        if st.button("Trigramas"):
-            st.session_state['chart_type'] = "Trigramas"
+        if st.button("Trigrams"):
+            st.session_state['chart_type'] = "Trigrams"
     with col6:
         if st.button("Top Words Sentiment Analysis"):
             st.session_state['chart_type'] = "Top Words Sentiment Analysis"
@@ -375,23 +375,23 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Top Words Sentiment Analysis":
         from nltk.sentiment import SentimentIntensityAnalyzer
         
-        # Garantir que todas as reviews sejam strings e tratar NaNs
+        # Ensure all reviews are strings and handle NaNs
         df_nlp['review'] = df_nlp['review'].astype(str).fillna('')
         
-        # Aplicar a análise de sentimentos
+        # Apply sentiment analysis
         sia = SentimentIntensityAnalyzer()
         df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
         df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(lambda x: 'Positive' if x >= 0.05 else ('Negative' if x <= -0.05 else 'Neutral'))
         
-        # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
+        # Filter for the categories of interest: Negative and Neutral (renamed as Positive)
         df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
-        df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']  # Será tratado como Positivo
+        df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']  # Will be treated as Positive
         
-        # Contagem de palavras para cada categoria
+        # Word count for each category
         negative_words = df_negative['review'].str.split(expand=True).unstack().value_counts()
         neutral_words = df_neutral['review'].str.split(expand=True).unstack().value_counts()
         
-        # Criar gráfico de barras para palavras negativas
+        # Create bar chart for negative words
         data_negative = [go.Bar(
                     x = negative_words.index.values[:30],
                     y = negative_words.values[:30],
@@ -402,13 +402,13 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         
         layout_negative = go.Layout(
             title='Top 30 Word Frequencies in Negative Reviews',
-            xaxis=dict(tickangle=-45)  # Ajusta a rotação dos rótulos do eixo x
+            xaxis=dict(tickangle=-45)  # Adjusts the rotation of the x-axis labels
         )
             
         fig_negative = go.Figure(data=data_negative, layout=layout_negative)
         st.plotly_chart(fig_negative)
         
-        # Criar gráfico de barras para palavras neutras (renomeadas como positivas)
+        # Create bar chart for neutral words (renamed as positive)
         data_neutral = [go.Bar(
                     x = neutral_words.index.values[:30],
                     y = neutral_words.values[:30],
@@ -419,7 +419,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         
         layout_neutral = go.Layout(
             title='Top 30 Word Frequencies in Positive Reviews',
-            xaxis=dict(tickangle=-45)  # Ajusta a rotação dos rótulos do eixo x
+            xaxis=dict(tickangle=-45)  # Adjusts the rotation of the x-axis labels
         )
         
         fig_neutral = go.Figure(data=data_neutral, layout=layout_neutral)
@@ -429,52 +429,52 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
 
 
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
-        # Extrair os componentes do sentimento de forma correta
+        # Extract sentiment components correctly
         df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
         df_nlp['sentiment_pos'] = df_sentiment_scores['pos']
         df_nlp['sentiment_neg'] = df_sentiment_scores['neg']
         df_nlp['sentiment_neu'] = df_sentiment_scores['neu']
 
-        # Calcular a média dos sentimentos por marca
+        # Calculate the average sentiment by brand
         brand_sentiment = df_nlp.groupby('brand_name').agg({
             'sentiment_pos': 'mean',
             'sentiment_neg': 'mean',
             'sentiment_neu': 'mean'
         }).reset_index()
 
-        # Transformar os dados para um formato longo para facilitar a plotagem
+        # Transform data to long format for easier plotting
         brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
                                                       value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
-                                                      var_name='Sentimento', value_name='Média')
+                                                      var_name='Sentiment', value_name='Average')
 
-        # Mapeamento de nomes mais legíveis
-        brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
-            'sentiment_pos': 'Positivo',
-            'sentiment_neg': 'Negativo',
-            'sentiment_neu': 'Neutro'
+        # Mapping to more readable names
+        brand_sentiment_melted['Sentiment'] = brand_sentiment_melted['Sentiment'].map({
+            'sentiment_pos': 'Positive',
+            'sentiment_neg': 'Negative',
+            'sentiment_neu': 'Neutral'
         })
 
-        # Criar gráfico interativo usando Plotly
+        # Create interactive chart using Plotly
         fig = px.bar(brand_sentiment_melted, 
                      x='brand_name', 
-                     y='Média', 
-                     color='Sentimento', 
+                     y='Average', 
+                     color='Sentiment', 
                      barmode='group',
-                     labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
-                     title='Comparação de Sentimentos por Marca',
-                     color_continuous_scale=colorscale)  # Aplicando a paleta de cores
+                     labels={'brand_name': 'Brand', 'Average': 'Average Sentiment'},
+                     title='Sentiment Comparison by Brand',
+                     color_continuous_scale=colorscale)  # Applying the color palette
 
-        # Exibir o gráfico interativo
+        # Display the interactive chart
         st.plotly_chart(fig)
     
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Word Cloud":
-        # Verificar e limpar dados ausentes na coluna 'review'
+        # Check and clean missing data in the 'review' column
         df_nlp['review'] = df_nlp['review'].fillna("")
 
-        # Gerar uma nuvem de palavras para as reviews da coluna 'review' do dataset detailed_car_5_brands.csv
+        # Generate a word cloud for the reviews in the 'review' column of the dataset detailed_car_5_brands.csv
         wordcloud = WordCloud(width=800, height=400, background_color='white').generate(" ".join(df_nlp['review']))
 
-        # Exibir a nuvem de palavras
+        # Display the word cloud
         plt.figure(figsize=(10, 5))
         plt.imshow(wordcloud, interpolation='bilinear')
         plt.title('Most Frequent Words')
@@ -482,73 +482,73 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         st.pyplot(plt)
     
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Top word frequency":
-        # Contagem de palavras no dataset de NLP
+        # Word count in the NLP dataset
         word_counts = df_nlp['review'].str.split(expand=True).unstack().value_counts().reset_index()
         word_counts.columns = ['Word', 'Count']
 
-        # Selecionar as top 10 palavras mais frequentes
+        # Select the top 10 most frequent words
         top_20_words = word_counts.head(20)
 
-        # Criar gráfico de barras interativo
+        # Create interactive bar chart
         fig = px.bar(top_20_words, x='Word', y='Count', title='Top 20 Words', labels={'Word': 'Word', 'Count': 'Count'},
                      color='Count',
-                     color_continuous_scale=colorscale)  # Aplicando a paleta de cores
+                     color_continuous_scale=colorscale)  # Applying the color palette
         st.plotly_chart(fig)
     
-    elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Bigramas":
-        # Função para gerar bigramas
-        def gerar_bigrams(texto):
-            palavras = texto.split()
-            bigramas = [(palavras[i], palavras[i+1]) for i in range(len(palavras)-1)]
-            return bigramas
+    elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Bigrams":
+        # Function to generate bigrams
+        def generate_bigrams(text):
+            words = text.split()
+            bigrams = [(words[i], words[i+1]) for i in range(len(words)-1)]
+            return bigrams
 
-        # Garantir que a coluna 'review' não contenha valores nulos e todos os valores sejam strings
+        # Ensure the 'review' column does not contain null values and all values are strings
         df_nlp['review'] = df_nlp['review'].fillna("").astype(str)
 
-        # Gerar bigramas para todas as reviews
-        df_nlp['bigrams'] = df_nlp['review'].apply(gerar_bigrams)
+        # Generate bigrams for all reviews
+        df_nlp['bigrams'] = df_nlp['review'].apply(generate_bigrams)
         
-        # Unificar os bigramas em uma única lista para contagem
+        # Unify bigrams into a single list for counting
         all_bigrams = [bigram for sublist in df_nlp['bigrams'] for bigram in sublist]
         
-        # Contagem de frequências de bigramas
+        # Count bigram frequencies
         bigram_counts = pd.Series(all_bigrams).value_counts().reset_index()
         bigram_counts.columns = ['Bigram', 'Count']
 
-        # Selecionar os 20 bigramas mais frequentes
+        # Select the top 20 most frequent bigrams
         top_20_bigrams = bigram_counts.head(20)
 
-        # Criar gráfico interativo de bigramas
+        # Create interactive bigram chart
         bigram_strs = top_20_bigrams['Bigram'].apply(lambda x: ' '.join(x))
         fig = px.bar(top_20_bigrams, x=bigram_strs, y='Count', title='Top 20 Bigrams', labels={'x': 'Bigram', 'Count': 'Count'},
                      color='Count',
-                     color_continuous_scale=colorscale)  # Aplicando a paleta de cores
+                     color_continuous_scale=colorscale)  # Applying the color palette
         st.plotly_chart(fig)
 
-    elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Trigramas":
-        # Função para gerar trigramas
-        def gerar_trigrams(texto):
-            palavras = texto.split()
-            trigrams = [(palavras[i], palavras[i+1], palavras[i+2]) for i in range(len(palavras)-2)]
+    elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Trigrams":
+        # Function to generate trigrams
+        def generate_trigrams(text):
+            words = text.split()
+            trigrams = [(words[i], words[i+1], words[i+2]) for i in range(len(words)-2)]
             return trigrams
     
-        # Garantir que a coluna 'review' não contenha valores nulos e todos os valores sejam strings
+        # Ensure the 'review' column does not contain null values and all values are strings
         df_nlp['review'] = df_nlp['review'].fillna("").astype(str)
     
-        # Gerar trigramas para todas as reviews
-        df_nlp['trigrams'] = df_nlp['review'].apply(gerar_trigrams)
+        # Generate trigrams for all reviews
+        df_nlp['trigrams'] = df_nlp['review'].apply(generate_trigrams)
         
-        # Unificar os trigramas em uma única lista para contagem
+        # Unify trigrams into a single list for counting
         all_trigrams = [trigram for sublist in df_nlp['trigrams'] for trigram in sublist]
         
-        # Contagem de frequências de trigramas
+        # Count trigram frequencies
         trigram_counts = pd.Series(all_trigrams).value_counts().reset_index()
         trigram_counts.columns = ['Trigram', 'Count']
     
-        # Selecionar os 20 trigramas mais frequentes
+        # Select the top 20 most frequent trigrams
         top_20_trigrams = trigram_counts.head(20)
     
-        # Criar gráfico interativo de trigramas com a paleta de cores personalizada
+        # Create interactive trigram chart with the custom color palette
         trigram_strs = top_20_trigrams['Trigram'].apply(lambda x: ' '.join(x))
         fig = px.bar(top_20_trigrams, 
                      x=trigram_strs, 
@@ -556,5 +556,5 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
                      title='Top 20 Trigrams', 
                      labels={'x': 'Trigram', 'Count': 'Count'},
                      color='Count',
-                     color_continuous_scale=colorscale)  # Aplicando a paleta de cores
+                     color_continuous_scale=colorscale)  # Applying the color palette
         st.plotly_chart(fig)
