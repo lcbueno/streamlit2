@@ -4,12 +4,6 @@ import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-import nltk
-
-# Inicializar o analisador de sentimentos
-nltk.download('vader_lexicon')
-sia = SentimentIntensityAnalyzer()
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -330,21 +324,26 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
 
     if 'chart_type' in st.session_state:
         if st.session_state['chart_type'] == "Sentiment Analysis":
-            # Garantir que todas as reviews sejam strings e tratar NaNs
-            df_nlp['review'] = df_nlp['review'].astype(str).fillna('')
+            # Análise de sentimentos simples baseada em regras (apenas para simulação)
+            def classify_sentiment(review):
+                review = review.lower()
+                if any(word in review for word in ['good', 'great', 'excellent']):
+                    return 'Positive'
+                elif any(word in review for word in ['bad', 'poor', 'terrible']):
+                    return 'Negative'
+                else:
+                    return 'Neutral'
 
-            # Aplicar a análise de sentimentos
-            df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
-            df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(lambda x: 'Positive' if x >= 0.05 else ('Negative' if x <= -0.05 else 'Neutral'))
+            df_nlp['sentiment_category'] = df_nlp['review'].apply(classify_sentiment)
 
             # Calcular a média dos sentimentos por marca
             brand_sentiment = df_nlp.groupby('brand_name').agg({
-                'sentiment_vader': 'mean'
+                'sentiment_category': lambda x: x.mode()[0]  # Calcula o sentimento mais comum (moda)
             }).reset_index()
 
             # Transformar os dados para um formato longo para facilitar a plotagem
             brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
-                                                          value_vars=['sentiment_vader'],
+                                                          value_vars=['sentiment_category'],
                                                           var_name='Sentimento', value_name='Média')
 
             # Criar gráfico interativo usando Plotly
