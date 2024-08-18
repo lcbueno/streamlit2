@@ -201,7 +201,7 @@ if uploaded_file is not None:
                 plt.ylabel('Number of Sales', fontsize=14)
                 plt.grid(True, color='gray', linestyle='--', linewidth=0.5)
                 plt.xticks(fontsize=12)
-                plt.yticks(fontsize(12))
+                plt.yticks(fontsize=12)
                 plt.gca().spines['top'].set_color('none')
                 plt.gca().spines['right'].set_color('none')
                 plt.gca().set_facecolor('white')
