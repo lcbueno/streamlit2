@@ -50,11 +50,6 @@ st.markdown("""
             justify-content: space-around;
             margin-bottom: 20px;
         }
-        .button-row {
-            display: flex;
-            justify-content: space-evenly;
-            margin-bottom: 20px;
-        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -341,9 +336,8 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         [1.0, "rgb(255, 255, 0)"],  # Yellow
     ]
 
-    # Linha 1 de botões
-    st.markdown('<div class="button-row">', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
+    # Botões no topo para escolher o gráfico
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     with col1:
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
@@ -353,11 +347,6 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     with col3:
         if st.button("Top word frequency"):
             st.session_state['chart_type'] = "Top word frequency"
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # Linha 2 de botões
-    st.markdown('<div class="button-row">', unsafe_allow_html=True)
-    col4, col5, col6 = st.columns(3)
     with col4:
         if st.button("Bigramas"):
             st.session_state['chart_type'] = "Bigramas"
@@ -366,12 +355,66 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
             st.session_state['chart_type'] = "Trigramas"
     with col6:
         if st.button("Top Words Sentiment Analysis"):
-            st.session_state['chart_type'] = "Top Words Sentiment Analysis"
-    st.markdown('</div>', unsafe_allow_html=True)
+            st.session_state['chart_type'] = "Top Words Sentiment Analysis"  # Vincula a funcionalidade
+        
+    if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Top Words Sentiment Analysis":
+        from nltk.sentiment import SentimentIntensityAnalyzer
+        
+        # Garantir que todas as reviews sejam strings e tratar NaNs
+        df_nlp['review'] = df_nlp['review'].astype(str).fillna('')
+        
+        # Aplicar a análise de sentimentos
+        sia = SentimentIntensityAnalyzer()
+        df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
+        df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(lambda x: 'Positive' if x >= 0.05 else ('Negative' if x <= -0.05 else 'Neutral'))
+        
+        # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
+        df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
+        df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']  # Será tratado como Positivo
+        
+        # Contagem de palavras para cada categoria
+        negative_words = df_negative['review'].str.split(expand=True).unstack().value_counts()
+        neutral_words = df_neutral['review'].str.split(expand=True).unstack().value_counts()
+        
+        # Criar gráfico de barras para palavras negativas
+        data_negative = [go.Bar(
+                    x = negative_words.index.values[:30],
+                    y = negative_words.values[:30],
+                    marker=dict(colorscale='Jet',
+                                color=negative_words.values[:30]),
+                    text=''
+            )]
+        
+        layout_negative = go.Layout(
+            title='Top 30 Word Frequencies in Negative Reviews',
+            xaxis=dict(tickangle=-45)  # Ajusta a rotação dos rótulos do eixo x
+        )
+            
+        fig_negative = go.Figure(data=data_negative, layout=layout_negative)
+        st.plotly_chart(fig_negative)
+        
+        # Criar gráfico de barras para palavras neutras (renomeadas como positivas)
+        data_neutral = [go.Bar(
+                    x = neutral_words.index.values[:30],
+                    y = neutral_words.values[:30],
+                    marker=dict(colorscale='Jet',
+                                color=neutral_words.values[:30]),
+                    text=''
+            )]
+        
+        layout_neutral = go.Layout(
+            title='Top 30 Word Frequencies in Positive Reviews',
+            xaxis=dict(tickangle=-45)  # Ajusta a rotação dos rótulos do eixo x
+        )
+        
+        fig_neutral = go.Figure(data=data_neutral, layout=layout_neutral)
+        st.plotly_chart(fig_neutral)
 
-    # Exibe os gráficos com base no botão selecionado
+
+
+
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
-        # Código para Análise de Sentimento
+        # Extrair os componentes do sentimento de forma correta
         df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
         df_nlp['sentiment_pos'] = df_sentiment_scores['pos']
         df_nlp['sentiment_neg'] = df_sentiment_scores['neg']
@@ -500,3 +543,5 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
                      color='Count',
                      color_continuous_scale=colorscale)  # Aplicando a paleta de cores
         st.plotly_chart(fig)
+else:
+    st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
