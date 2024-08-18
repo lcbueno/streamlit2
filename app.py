@@ -49,6 +49,11 @@ st.markdown("""
 
 # Sidebar para seleção da página principal
 st.sidebar.title("Analytical Dashboard")
+
+# Novo botão "NLP" adicionado acima do botão "Overview Data"
+if st.sidebar.button("NLP"):
+    st.session_state['page'] = 'NLP'
+
 if st.sidebar.button("Overview Data"):
     st.session_state['page'] = 'Overview'
 if st.sidebar.button("Regional Sales"):
@@ -89,8 +94,13 @@ if uploaded_file is not None:
     filtered_df = df[(df['Dealer_Region'].isin(selected_region)) & 
                      (df['Date'].between(selected_dates[0], selected_dates[1]))]
 
+    # Página: NLP
+    if st.session_state['page'] == "NLP":
+        st.title('Dashboard Yamaha - NLP')
+        st.write("Conteúdo da página NLP.")
+
     # Página: Visão Geral Dados
-    if st.session_state['page'] == "Overview":
+    elif st.session_state['page'] == "Overview":
         st.title('Dashboard Yamaha - Overview Data')
 
         # Inicializar o estado da sessão para os gráficos se ainda não foi definido
@@ -191,7 +201,7 @@ if uploaded_file is not None:
                 plt.ylabel('Number of Sales', fontsize=14)
                 plt.grid(True, color='gray', linestyle='--', linewidth=0.5)
                 plt.xticks(fontsize=12)
-                plt.yticks(fontsize=12)
+                plt.yticks(fontsize(12))
                 plt.gca().spines['top'].set_color('none')
                 plt.gca().spines['right'].set_color('none')
                 plt.gca().set_facecolor('white')
