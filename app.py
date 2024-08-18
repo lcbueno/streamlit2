@@ -231,8 +231,16 @@ if df_sales is not None and st.session_state['page'] != "NLP":
             plt.title('Product Mix by Region (Body Style)', fontsize=16)
             plt.xlabel('Body Style', fontsize=14)
             plt.ylabel('Reseller Region', fontsize=14)
-            plt.xticks(fontsize(12)
-            plt.yticks(fontsize(12)
+            plt.xticks(fontsize=12)
+            plt.yticks(fontsize=12)
+            plt.gca().spines['top'].set_color('none')
+            plt.gca().spines['right'].set_color('none')
+            plt.gca().set_facecolor('white')
+            plt.gca().xaxis.label.set_color('black')
+            plt.gca().yaxis.label.set_color('black')
+            plt.gca().title.set_color('black')
+            plt.gca().tick_params(axis='x', colors='black')
+            plt.gca().tick_params(axis='y', colors='black')
             st.pyplot(plt)
 
     # Página: Vendas Carros
