@@ -4,8 +4,6 @@ import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
-from nltk import ngrams
-from collections import Counter
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -89,29 +87,6 @@ if uploaded_files:
             df_nlp = df
         else:
             st.warning(f"O arquivo {uploaded_file.name} não contém as colunas necessárias para análise e será ignorado.")
-
-# Função simples de análise de sentimentos baseada em palavras-chave
-def simple_sentiment_analysis(review):
-    positive_words = ['good', 'great', 'excellent', 'amazing', 'fantastic', 'love']
-    negative_words = ['bad', 'terrible', 'awful', 'hate', 'worst', 'poor']
-
-    review = review.lower()  # Converter para minúsculas
-    sentiment_score = 0
-
-    for word in positive_words:
-        if word in review:
-            sentiment_score += 1
-
-    for word in negative_words:
-        if word in review:
-            sentiment_score -= 1
-
-    if sentiment_score > 0:
-        return 'Positive'
-    elif sentiment_score < 0:
-        return 'Negative'
-    else:
-        return 'Neutral'
 
 # Tratamento do dataset de vendas
 if df_sales is not None and st.session_state['page'] != "NLP":
@@ -339,27 +314,47 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     st.title('Dashboard Yamaha - NLP Analysis')
 
     # Botões no topo para escolher o gráfico
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     with col1:
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
     with col2:
         if st.button("Word Cloud"):
             st.session_state['chart_type'] = "Word Cloud"
-    with col3:
-        if st.button("Bigramas"):
-            st.session_state['chart_type'] = "Bigramas"
-
-    # Adicionar o processamento necessário para criar a coluna 'sentiment_category'
-    if 'sentiment_category' not in df_nlp.columns:
-        df_nlp['sentiment_category'] = df_nlp['review'].apply(simple_sentiment_analysis)
 
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
+        # Extrair os componentes do sentimento de forma correta
+        df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
+        df_nlp['sentiment_pos'] = df_sentiment_scores['pos']
+        df_nlp['sentiment_neg'] = df_sentiment_scores['neg']
+        df_nlp['sentiment_neu'] = df_sentiment_scores['neu']
+
         # Calcular a média dos sentimentos por marca
-        brand_sentiment = df_nlp.groupby('brand_name')['sentiment_category'].value_counts(normalize=True).unstack().fillna(0)
-        
+        brand_sentiment = df_nlp.groupby('brand_name').agg({
+            'sentiment_pos': 'mean',
+            'sentiment_neg': 'mean',
+            'sentiment_neu': 'mean'
+        }).reset_index()
+
+        # Transformar os dados para um formato longo para facilitar a plotagem
+        brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
+                                                      value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
+                                                      var_name='Sentimento', value_name='Média')
+
+        # Mapeamento de nomes mais legíveis
+        brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
+            'sentiment_pos': 'Positivo',
+            'sentiment_neg': 'Negativo',
+            'sentiment_neu': 'Neutro'
+        })
+
         # Criar gráfico interativo usando Plotly
-        fig = px.bar(brand_sentiment, 
+        fig = px.bar(brand_sentiment_melted, 
+                     x='brand_name', 
+                     y='Média', 
+                     color='Sentimento', 
+                     barmode='group',
+                     labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
                      title='Comparação de Sentimentos por Marca')
 
         # Exibir o gráfico interativo
@@ -379,44 +374,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         plt.axis('off')
         st.pyplot(plt)
 
-    elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Bigramas":
-        # Garantir que todas as reviews sejam strings e tratar NaNs
-        df_nlp['review'] = df_nlp['review'].astype(str).fillna('')
 
-        # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
-        df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
-        df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']  # Será tratado como Positivo
-
-        # Gerar bigramas a partir das avaliações para cada categoria
-        negative_bigrams = Counter([bigram for review in df_negative['review'] for bigram in ngrams(review.split(), 2)]).most_common()
-        neutral_bigrams = Counter([bigram for review in df_neutral['review'] for bigram in ngrams(review.split(), 2)]).most_common()
-
-        # Transformar as contagens em DataFrames para facilitar a visualização
-        df_negative_bigrams = pd.DataFrame(negative_bigrams)
-        df_neutral_bigrams = pd.DataFrame(neutral_bigrams)
-
-        # Definir o número de bigramas a serem exibidos
-        N = 20  # Exibir os 20 bigramas mais comuns
-
-        # Plotar os gráficos de barras lado a lado
-        fig, axes = plt.subplots(ncols=2, figsize=(18, 8), dpi=100)
-        plt.tight_layout()
-
-        sns.barplot(y=df_negative_bigrams[0].apply(lambda x: ' '.join(x)).values[:N], x=df_negative_bigrams[1].values[:N], ax=axes[0], color='red')
-        sns.barplot(y=df_neutral_bigrams[0].apply(lambda x: ' '.join(x)).values[:N], x=df_neutral_bigrams[1].values[:N], ax=axes[1], color='green')
-
-        # Ajustar os gráficos
-        for i in range(2):
-            axes[i].spines['right'].set_visible(False)
-            axes[i].set_xlabel('')
-            axes[i].set_ylabel('')
-            axes[i].tick_params(axis='x', labelsize=13)
-            axes[i].tick_params(axis='y', labelsize=13)
-
-        axes[0].set_title(f'Top {N} Most Common Bigrams in Negative Reviews', fontsize=15)
-        axes[1].set_title(f'Top {N} Most Common Bigrams in Positive Reviews (Originally Neutral)', fontsize=15)
-
-        st.pyplot(fig)
 
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
