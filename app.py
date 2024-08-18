@@ -56,7 +56,7 @@ if st.sidebar.button("NLP"):
     st.session_state['page'] = 'NLP'
 
 if st.sidebar.button("Overview Data"):
-    st.session_state['page'] = 'Overview Data'
+    st.session_state['page'] = 'Overview'
 if st.sidebar.button("Regional Sales"):
     st.session_state['page'] = 'Regional Sales'
 if st.sidebar.button("Vehicle Sales"):
@@ -86,15 +86,13 @@ if uploaded_file_1 is not None and uploaded_file_2 is not None:
     else:
         st.error("A coluna 'Date' não foi encontrada no primeiro arquivo CSV. Verifique o arquivo e tente novamente.")
 
-    # Verificar se a coluna 'sentiment score' existe no segundo dataframe
-    if 'sentiment score' in df2.columns:
-        # Extrair os componentes do sentimento de forma correta
-        df_sentiment_scores = pd.json_normalize(df2['sentiment score'].apply(eval))
-        df2['sentiment_pos'] = df_sentiment_scores['pos']
-        df2['sentiment_neg'] = df_sentiment_scores['neg']
-        df2['sentiment_neu'] = df_sentiment_scores['neu']
+    # Verificar se a coluna 'Customer_ID' existe no segundo dataframe
+    if 'Customer_ID' in df2.columns:
+        # Verifique o que você deseja fazer com essa coluna
+        # Exemplo: df2['Customer_ID'] = df2['Customer_ID'].astype(str)
+        pass
     else:
-        st.error("A coluna 'sentiment score' não foi encontrada no segundo arquivo CSV. Verifique o arquivo e tente novamente.")
+        st.error("A coluna 'Customer_ID' não foi encontrada no segundo arquivo CSV. Verifique o arquivo e tente novamente.")
 
     # Aplicar filtros (sem mostrar no layout) no primeiro dataset
     regions = list(df1['Dealer_Region'].unique()) if 'Dealer_Region' in df1.columns else []
@@ -130,42 +128,39 @@ if uploaded_file_1 is not None and uploaded_file_2 is not None:
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Sentiment Analysis':
-            if 'brand_name' in df2.columns:
-                # Calcular a média dos sentimentos por marca
-                brand_sentiment = df2.groupby('brand_name').agg({
-                    'sentiment_pos': 'mean',
-                    'sentiment_neg': 'mean',
-                    'sentiment_neu': 'mean'
-                }).reset_index()
+            # Calcular a média dos sentimentos por marca
+            brand_sentiment = df2.groupby('brand_name').agg({
+                'sentiment_pos': 'mean',
+                'sentiment_neg': 'mean',
+                'sentiment_neu': 'mean'
+            }).reset_index()
 
-                # Transformar os dados para um formato longo para facilitar a plotagem
-                brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
-                                                              value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
-                                                              var_name='Sentimento', value_name='Média')
+            # Transformar os dados para um formato longo para facilitar a plotagem
+            brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
+                                                          value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
+                                                          var_name='Sentimento', value_name='Média')
 
-                # Mapeamento de nomes mais legíveis
-                brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
-                    'sentiment_pos': 'Positivo',
-                    'sentiment_neg': 'Negativo',
-                    'sentiment_neu': 'Neutro'
-                })
+            # Mapeamento de nomes mais legíveis
+            brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
+                'sentiment_pos': 'Positivo',
+                'sentiment_neg': 'Negativo',
+                'sentiment_neu': 'Neutro'
+            })
 
-                # Criar gráfico interativo usando Plotly
-                fig = px.bar(brand_sentiment_melted, 
-                             x='brand_name', 
-                             y='Média', 
-                             color='Sentimento', 
-                             barmode='group',
-                             labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
-                             title='Comparação de Sentimentos por Marca')
+            # Criar gráfico interativo usando Plotly
+            fig = px.bar(brand_sentiment_melted, 
+                         x='brand_name', 
+                         y='Média', 
+                         color='Sentimento', 
+                         barmode='group',
+                         labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
+                         title='Comparação de Sentimentos por Marca')
 
-                # Exibir o gráfico interativo
-                st.plotly_chart(fig)
-            else:
-                st.error("A coluna 'brand_name' não foi encontrada no segundo arquivo CSV. Verifique o arquivo e tente novamente.")
+            # Exibir o gráfico interativo
+            st.plotly_chart(fig)
 
     # Página: Visão Geral Dados
-    elif st.session_state['page'] == "Overview Data":
+    elif st.session_state['page'] == "Overview":
         st.title('Dashboard Yamaha - Overview Data')
 
         # Inicializar o estado da sessão para os gráficos se ainda não foi definido
@@ -195,50 +190,96 @@ if uploaded_file_1 is not None and uploaded_file_2 is not None:
             st.write(unique_counts)
 
         elif st.session_state['chart_type'] == 'Download Dataset':
-            st.write("Download Dataset:")
-            st.download_button('Download CSV', df1.to_csv(), file_name='data.csv', mime='text/csv')
+            st.download_button(
+                label="Download Full Dataset",
+                data=df1.to_csv(index=False),
+                file_name='dataset_completo.csv',
+                mime='text/csv'
+            )
 
-    # Página: Regional Sales
+    # Página: Vendas Regionais
     elif st.session_state['page'] == "Regional Sales":
         st.title('Dashboard Yamaha - Regional Sales')
 
-        # Verificar se 'filtered_df1' tem a coluna 'Dealer_Region'
-        if 'Dealer_Region' in filtered_df1.columns:
-            # Plotar gráfico interativo de evolução das vendas por região
-            if 'Sales' in filtered_df1.columns:
-                sales_by_region = filtered_df1.groupby(['Dealer_Region', 'Date']).agg({'Sales': 'sum'}).reset_index()
-                sales_by_region_pivot = sales_by_region.pivot(index='Date', columns='Dealer_Region', values='Sales')
-                st.line_chart(sales_by_region_pivot)
-            else:
-                st.error("A coluna 'Sales' não foi encontrada no primeiro arquivo CSV. Verifique o arquivo e tente novamente.")
-        else:
-            st.error("A coluna 'Dealer_Region' não foi encontrada no primeiro arquivo CSV. Verifique o arquivo e tente novamente.")
+        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        if 'chart_type' not in st.session_state:
+            st.session_state['chart_type'] = 'Sales by Region'
 
-    # Página: Vehicle Sales
+        # Botões no topo para escolher o gráfico
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Sales by Region"):
+                st.session_state['chart_type'] = "Sales by Region"
+        with col2:
+            if st.button("Price Distribution by Region"):
+                st.session_state['chart_type'] = "Price Distribution by Region"
+
+        # Exibir o gráfico com base na escolha do botão
+        if st.session_state['chart_type'] == 'Sales by Region':
+            sales_by_region = filtered_df1.groupby('Dealer_Region').size().reset_index(name='Count')
+            fig = px.bar(sales_by_region, x='Dealer_Region', y='Count', title='Sales Count by Region')
+            st.plotly_chart(fig)
+
+        elif st.session_state['chart_type'] == 'Price Distribution by Region':
+            price_distribution_by_region = filtered_df1.groupby('Dealer_Region')['Price ($)'].mean().reset_index()
+            fig = px.bar(price_distribution_by_region, x='Dealer_Region', y='Price ($)', title='Average Price by Region')
+            st.plotly_chart(fig)
+
+    # Página: Vendas de Veículos
     elif st.session_state['page'] == "Vehicle Sales":
         st.title('Dashboard Yamaha - Vehicle Sales')
 
-        # Verificar se 'filtered_df1' tem a coluna 'Vehicle_Type'
-        if 'Vehicle_Type' in filtered_df1.columns:
-            # Plotar gráfico interativo de vendas por tipo de veículo
-            if 'Sales' in filtered_df1.columns:
-                vehicle_sales = filtered_df1.groupby('Vehicle_Type').agg({'Sales': 'sum'}).reset_index()
-                st.bar_chart(vehicle_sales.set_index('Vehicle_Type'))
-            else:
-                st.error("A coluna 'Sales' não foi encontrada no primeiro arquivo CSV. Verifique o arquivo e tente novamente.")
-        else:
-            st.error("A coluna 'Vehicle_Type' não foi encontrada no primeiro arquivo CSV. Verifique o arquivo e tente novamente.")
+        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        if 'chart_type' not in st.session_state:
+            st.session_state['chart_type'] = 'Vehicle Sales Overview'
 
-    # Página: Customer Profile
+        # Botões no topo para escolher o gráfico
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Vehicle Sales Overview"):
+                st.session_state['chart_type'] = "Vehicle Sales Overview"
+        with col2:
+            if st.button("Price by Vehicle Model"):
+                st.session_state['chart_type'] = "Price by Vehicle Model"
+
+        # Exibir o gráfico com base na escolha do botão
+        if st.session_state['chart_type'] == 'Vehicle Sales Overview':
+            vehicle_sales = filtered_df1.groupby('Model').size().reset_index(name='Count')
+            fig = px.bar(vehicle_sales, x='Model', y='Count', title='Vehicle Sales Overview')
+            st.plotly_chart(fig)
+
+        elif st.session_state['chart_type'] == 'Price by Vehicle Model':
+            price_by_model = filtered_df1.groupby('Model')['Price ($)'].mean().reset_index()
+            fig = px.bar(price_by_model, x='Model', y='Price ($)', title='Average Price by Vehicle Model')
+            st.plotly_chart(fig)
+
+    # Página: Perfil do Cliente
     elif st.session_state['page'] == "Customer Profile":
         st.title('Dashboard Yamaha - Customer Profile')
 
-        # Verificar se o segundo DataFrame tem a coluna 'Customer_ID'
-        if 'Customer_ID' in df2.columns:
-            # Exibir uma amostra dos dados do perfil do cliente
-            st.write("Customer Profile Data:")
-            st.dataframe(df2[['Customer_ID', 'sentiment_pos', 'sentiment_neg', 'sentiment_neu']], width=1500, height=600)
-        else:
-            st.error("A coluna 'Customer_ID' não foi encontrada no segundo arquivo CSV. Verifique o arquivo e tente novamente.")
+        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        if 'chart_type' not in st.session_state:
+            st.session_state['chart_type'] = 'Customer Overview'
+
+        # Botões no topo para escolher o gráfico
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Customer Overview"):
+                st.session_state['chart_type'] = "Customer Overview"
+        with col2:
+            if st.button("Income Distribution"):
+                st.session_state['chart_type'] = "Income Distribution"
+
+        # Exibir o gráfico com base na escolha do botão
+        if st.session_state['chart_type'] == 'Customer Overview':
+            customer_overview = df1.groupby('Gender').size().reset_index(name='Count')
+            fig = px.bar(customer_overview, x='Gender', y='Count', title='Customer Overview')
+            st.plotly_chart(fig)
+
+        elif st.session_state['chart_type'] == 'Income Distribution':
+            income_distribution = df1[['Annual Income', 'Gender']].copy()
+            fig = px.histogram(income_distribution, x='Annual Income', color='Gender', title='Annual Income Distribution')
+            st.plotly_chart(fig)
+
 else:
-    st.error("Por favor, faça o upload de ambos os arquivos CSV para continuar.")
+    st.warning("Por favor, faça o upload dos dois arquivos CSV para iniciar a análise.")
