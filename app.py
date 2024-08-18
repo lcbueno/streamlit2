@@ -543,5 +543,3 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
                      color='Count',
                      color_continuous_scale=colorscale)  # Aplicando a paleta de cores
         st.plotly_chart(fig)
-else:
-    st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
