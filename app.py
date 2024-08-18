@@ -436,7 +436,19 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         fig = px.bar(top_20_bigrams, x=bigram_strs, y='Count', title='Top 20 Bigrams', labels={'x': 'Bigram', 'Count': 'Count'})
         st.plotly_chart(fig)
 
-
+    
+    import plotly.express as px
+    
+    # Defina uma paleta de cores personalizada semelhante à da sua imagem
+    colorscale = [
+        [0.0, "rgb(0, 0, 139)"],   # Navy (equivalente ao roxo escuro)
+        [0.2, "rgb(75, 0, 130)"],  # Indigo
+        [0.4, "rgb(138, 43, 226)"], # BlueViolet
+        [0.6, "rgb(255, 0, 255)"],  # Magenta
+        [0.8, "rgb(255, 165, 0)"],  # Orange
+        [1.0, "rgb(255, 255, 0)"],  # Yellow
+    ]
+    
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Trigramas":
         # Função para gerar trigramas
         def gerar_trigrams(texto):
@@ -460,9 +472,15 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         # Selecionar os 20 trigramas mais frequentes
         top_20_trigrams = trigram_counts.head(20)
     
-        # Criar gráfico interativo de trigramas
+        # Criar gráfico interativo de trigramas com a paleta de cores personalizada
         trigram_strs = top_20_trigrams['Trigram'].apply(lambda x: ' '.join(x))
-        fig = px.bar(top_20_trigrams, x=trigram_strs, y='Count', title='Top 20 Trigrams', labels={'x': 'Trigram', 'Count': 'Count'})
+        fig = px.bar(top_20_trigrams, 
+                     x=trigram_strs, 
+                     y='Count', 
+                     title='Top 20 Trigrams', 
+                     labels={'x': 'Trigram', 'Count': 'Count'},
+                     color='Count',
+                     color_continuous_scale=colorscale)  # Aplicando a paleta de cores
         st.plotly_chart(fig)
 
 
