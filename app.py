@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
-import seaborn as sns
 import plotly.express as px
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Caminho para a imagem
@@ -97,7 +97,55 @@ if uploaded_file is not None:
     # Página: NLP
     if st.session_state['page'] == "NLP":
         st.title('Dashboard Yamaha - NLP')
-        st.write("Conteúdo da página NLP.")
+
+        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        if 'chart_type' not in st.session_state:
+            st.session_state['chart_type'] = 'Sentiment Analysis'
+
+        # Botões no topo para escolher o gráfico
+        col1 = st.columns(1)
+        with col1[0]:
+            if st.button("Sentiment Analysis"):
+                st.session_state['chart_type'] = "Sentiment Analysis"
+
+        # Exibir o gráfico com base na escolha do botão
+        if st.session_state['chart_type'] == 'Sentiment Analysis':
+            # Extrair os componentes do sentimento de forma correta
+            df_sentiment_scores = pd.json_normalize(df['sentiment score'].apply(eval))
+            df['sentiment_pos'] = df_sentiment_scores['pos']
+            df['sentiment_neg'] = df_sentiment_scores['neg']
+            df['sentiment_neu'] = df_sentiment_scores['neu']
+
+            # Calcular a média dos sentimentos por marca
+            brand_sentiment = df.groupby('brand_name').agg({
+                'sentiment_pos': 'mean',
+                'sentiment_neg': 'mean',
+                'sentiment_neu': 'mean'
+            }).reset_index()
+
+            # Transformar os dados para um formato longo para facilitar a plotagem
+            brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
+                                                          value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
+                                                          var_name='Sentimento', value_name='Média')
+
+            # Mapeamento de nomes mais legíveis
+            brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
+                'sentiment_pos': 'Positivo',
+                'sentiment_neg': 'Negativo',
+                'sentiment_neu': 'Neutro'
+            })
+
+            # Criar gráfico interativo usando Plotly
+            fig = px.bar(brand_sentiment_melted, 
+                         x='brand_name', 
+                         y='Média', 
+                         color='Sentimento', 
+                         barmode='group',
+                         labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
+                         title='Comparação de Sentimentos por Marca')
+
+            # Exibir o gráfico interativo
+            st.plotly_chart(fig)
 
     # Página: Visão Geral Dados
     elif st.session_state['page'] == "Overview":
