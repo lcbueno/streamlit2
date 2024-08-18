@@ -9,8 +9,12 @@ from collections import Counter
 from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
 
-# Certifique-se de que o léxico vader esteja disponível
-nltk.download('vader_lexicon')
+# Verifique se o léxico está disponível e pronto para ser usado
+try:
+    sia = SentimentIntensityAnalyzer()
+except LookupError:
+    st.error("O léxico vader_lexicon não foi encontrado. Por favor, certifique-se de que ele esteja instalado no ambiente antes de executar o aplicativo.")
+    st.stop()
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
