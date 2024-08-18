@@ -362,6 +362,12 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
             st.plotly_chart(fig)
 
         elif st.session_state['chart_type'] == "Word Cloud":
+            # Verificar se a coluna sentiment_category existe, caso contrário, criar
+            if 'sentiment_category' not in df_nlp.columns:
+                df_nlp['sentiment_category'] = df_nlp.apply(
+                    lambda row: 'Negative' if row['sentiment_neg'] > row['sentiment_pos'] else 'Neutral', axis=1
+                )
+
             # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
             df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
             df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']
