@@ -208,7 +208,7 @@ if df_sales is not None and st.session_state['page'] != "NLP":
                 plt.ylabel('Number of Sales', fontsize=14)
                 plt.grid(True, color='gray', linestyle='--', linewidth=0.5)
                 plt.xticks(fontsize=12)
-                plt.yticks(fontsize(12)
+                plt.yticks(fontsize=12)
                 plt.gca().spines['top'].set_color('none')
                 plt.gca().spines['right'].set_color('none')
                 plt.gca().set_facecolor('white')
@@ -218,6 +218,7 @@ if df_sales is not None and st.session_state['page'] != "NLP":
                 plt.gca().tick_params(axis='x', colors='black')
                 plt.gca().tick_params(axis='y', colors='black')
                 st.pyplot(plt)
+
 
             plot_sales(selected_region_time_series, selected_model_time_series)
 
