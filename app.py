@@ -323,7 +323,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
             st.session_state['chart_type'] = "Word Cloud"
     with col3:
         if st.button("Bigramas"):
-            pass  # Não há função vinculada a este botão, conforme solicitado
+            st.session_state['chart_type'] = "Bigramas"
 
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
         # Extrair os componentes do sentimento de forma correta
@@ -376,6 +376,51 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         plt.title('Most Frequent Words')
         plt.axis('off')
         st.pyplot(plt)
+
+    elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Bigramas":
+        import pandas as pd
+        import seaborn as sns
+        import matplotlib.pyplot as plt
+        from nltk import ngrams
+        from collections import Counter
+
+        # Garantir que todas as reviews sejam strings e tratar NaNs
+        df_nlp['review'] = df_nlp['review'].astype(str).fillna('')
+
+        # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
+        df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
+        df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']  # Será tratado como Positivo
+
+        # Gerar bigramas a partir das avaliações para cada categoria
+        negative_bigrams = Counter([bigram for review in df_negative['review'] for bigram in ngrams(review.split(), 2)]).most_common()
+        neutral_bigrams = Counter([bigram for review in df_neutral['review'] for bigram in ngrams(review.split(), 2)]).most_common()
+
+        # Transformar as contagens em DataFrames para facilitar a visualização
+        df_negative_bigrams = pd.DataFrame(negative_bigrams)
+        df_neutral_bigrams = pd.DataFrame(neutral_bigrams)
+
+        # Definir o número de bigramas a serem exibidos
+        N = 20  # Exibir os 20 bigramas mais comuns
+
+        # Plotar os gráficos de barras lado a lado
+        fig, axes = plt.subplots(ncols=2, figsize=(18, 8), dpi=100)
+        plt.tight_layout()
+
+        sns.barplot(y=df_negative_bigrams[0].apply(lambda x: ' '.join(x)).values[:N], x=df_negative_bigrams[1].values[:N], ax=axes[0], color='red')
+        sns.barplot(y=df_neutral_bigrams[0].apply(lambda x: ' '.join(x)).values[:N], x=df_neutral_bigrams[1].values[:N], ax=axes[1], color='green')
+
+        # Ajustar os gráficos
+        for i in range(2):
+            axes[i].spines['right'].set_visible(False)
+            axes[i].set_xlabel('')
+            axes[i].set_ylabel('')
+            axes[i].tick_params(axis='x', labelsize=13)
+            axes[i].tick_params(axis='y', labelsize=13)
+
+        axes[0].set_title(f'Top {N} Most Common Bigrams in Negative Reviews', fontsize=15)
+        axes[1].set_title(f'Top {N} Most Common Bigrams in Positive Reviews (Originally Neutral)', fontsize=15)
+
+        st.pyplot(fig)
 
 
 
