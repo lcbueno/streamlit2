@@ -10,6 +10,41 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 import nltk
 import plotly.express as px
 
+import gensim
+from gensim import corpora
+from gensim.models import LdaModel
+from nltk.corpus import stopwords
+import pyLDAvis
+import pyLDAvis.gensim_models as gensimvis
+import plotly.io as pio
+
+# Baixar stopwords
+nltk.download('stopwords')
+stop_words = stopwords.words('english')
+
+# Função para análise LDA
+def lda_relevant_terms(df):
+    # Garantir que a coluna 'review' tenha valores válidos e tratar NaNs
+    df['review'] = df['review'].astype(str).fillna('')
+
+    # Pré-processamento de texto
+    df['processed_review'] = df['review'].str.lower().str.split().apply(
+        lambda x: [word for word in x if word not in stop_words]
+    )
+
+    # Criar dicionário e corpus para LDA
+    dictionary = corpora.Dictionary(df['processed_review'])
+    corpus = [dictionary.doc2bow(text) for text in df['processed_review']]
+
+    # Rodar o modelo LDA
+    lda_model = LdaModel(corpus, num_topics=5, id2word=dictionary, passes=15)
+
+    # Preparar visualização interativa com pyLDAvis
+    lda_vis = gensimvis.prepare(lda_model, corpus, dictionary)
+
+    # Exibir visualização interativa
+    pyLDAvis.display(lda_vis)
+
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
 
@@ -358,64 +393,11 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
             st.session_state['chart_type'] = "Top Words Sentiment Analysis"  # Vincula a funcionalidade
     with col7:
         if st.button("Relevante Terms"):
-            st.session_state['chart_type'] = "Relevante Terms"  # Adiciona o botão sem funcionalidade
+            st.session_state['chart_type'] = "Relevante Terms"  # Vincula à função LDA
 
-        
-    if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Top Words Sentiment Analysis":
-        from nltk.sentiment import SentimentIntensityAnalyzer
-        
-        # Garantir que todas as reviews sejam strings e tratar NaNs
-        df_nlp['review'] = df_nlp['review'].astype(str).fillna('')
-        
-        # Aplicar a análise de sentimentos
-        sia = SentimentIntensityAnalyzer()
-        df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
-        df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(lambda x: 'Positive' if x >= 0.05 else ('Negative' if x <= -0.05 else 'Neutral'))
-        
-        # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
-        df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
-        df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']  # Será tratado como Positivo
-        
-        # Contagem de palavras para cada categoria
-        negative_words = df_negative['review'].str.split(expand=True).unstack().value_counts()
-        neutral_words = df_neutral['review'].str.split(expand=True).unstack().value_counts()
-        
-        # Criar gráfico de barras para palavras negativas
-        data_negative = [go.Bar(
-                    x = negative_words.index.values[:30],
-                    y = negative_words.values[:30],
-                    marker=dict(colorscale='Jet',
-                                color=negative_words.values[:30]),
-                    text=''
-            )]
-        
-        layout_negative = go.Layout(
-            title='Top 30 Word Frequencies in Negative Reviews',
-            xaxis=dict(tickangle=-45)  # Ajusta a rotação dos rótulos do eixo x
-        )
-            
-        fig_negative = go.Figure(data=data_negative, layout=layout_negative)
-        st.plotly_chart(fig_negative)
-        
-        # Criar gráfico de barras para palavras neutras (renomeadas como positivas)
-        data_neutral = [go.Bar(
-                    x = neutral_words.index.values[:30],
-                    y = neutral_words.values[:30],
-                    marker=dict(colorscale='Jet',
-                                color=neutral_words.values[:30]),
-                    text=''
-            )]
-        
-        layout_neutral = go.Layout(
-            title='Top 30 Word Frequencies in Positive Reviews',
-            xaxis=dict(tickangle=-45)  # Ajusta a rotação dos rótulos do eixo x
-        )
-        
-        fig_neutral = go.Figure(data=data_neutral, layout=layout_neutral)
-        st.plotly_chart(fig_neutral)
-
-
-
+    # Executar a função de LDA se o botão "Relevante Terms" for clicado
+    if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Relevante Terms":
+        lda_relevant_terms(df_nlp)
 
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
         # Extrair os componentes do sentimento de forma correta
