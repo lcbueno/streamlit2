@@ -385,9 +385,9 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
                     text=''
             )]
         
-        layout_negative = go.Layout(
-            title='Top 30 Word Frequencies in Negative Reviews'
-        )
+    layout_negative = go.Layout(
+        title='Top 30 Word Frequencies in Negative Reviews'
+    )
         
         fig_negative = go.Figure(data=data_negative, layout=layout_negative)
         st.plotly_chart(fig_negative)
