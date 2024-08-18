@@ -361,8 +361,8 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         st.plotly_chart(fig)
     
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Word Cloud":
-        # Gerar uma nuvem de palavras para as reviews
-        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(" ".join(df_nlp['cleaned_review']))
+        # Gerar uma nuvem de palavras para as reviews da coluna 'review' do dataset detailed_car_5_brands.csv
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(" ".join(df_nlp['review']))
 
         # Exibir a nuvem de palavras
         plt.figure(figsize=(10, 5))
