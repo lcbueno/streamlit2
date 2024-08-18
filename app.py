@@ -325,6 +325,18 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         if st.button("Bigramas"):
             st.session_state['chart_type'] = "Bigramas"
 
+    # Adicionar o processamento necessário para criar a coluna 'sentiment_category'
+    if 'sentiment_category' not in df_nlp.columns:
+        from nltk.sentiment import SentimentIntensityAnalyzer
+        import nltk
+        nltk.download('vader_lexicon')
+
+        sia = SentimentIntensityAnalyzer()
+        df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
+        df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(
+            lambda x: 'Positive' if x >= 0.05 else ('Negative' if x <= -0.05 else 'Neutral')
+        )
+
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
         # Extrair os componentes do sentimento de forma correta
         df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
