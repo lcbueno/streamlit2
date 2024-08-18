@@ -313,7 +313,8 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     st.title('Dashboard Yamaha - NLP Analysis')
 
     # Botão no topo para escolher o gráfico de Análise de Sentimento
-    col1 = st.columns(1)
+    col1 = st.columns(1)  # Correção para evitar o erro: use col1 diretamente
+    col1 = col1[0]  # Certifique-se de pegar a primeira (e única) coluna
     with col1:
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
