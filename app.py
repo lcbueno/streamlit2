@@ -362,14 +362,32 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
             st.plotly_chart(fig)
 
         elif st.session_state['chart_type'] == "Word Cloud":
-            # Gerar uma word cloud com base nas palavras mais comuns nas análises de sentimentos
-            all_text = ' '.join(df_nlp['brand_name'].tolist())
-            wordcloud = WordCloud(width=800, height=400, background_color='white').generate(all_text)
+            # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
+            df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
+            df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']
 
-            # Exibir a word cloud
-            plt.figure(figsize=(10, 5))
-            plt.imshow(wordcloud, interpolation='bilinear')
-            plt.axis('off')
-            st.pyplot(plt)
+            # Gerar Word Cloud para sentimentos negativos
+            negative_text = ' '.join(df_negative['brand_name'].tolist())
+            wordcloud_negative = WordCloud(width=400, height=400, background_color='white').generate(negative_text)
+
+            # Gerar Word Cloud para sentimentos neutros (positivos)
+            neutral_text = ' '.join(df_neutral['brand_name'].tolist())
+            wordcloud_neutral = WordCloud(width=400, height=400, background_color='white').generate(neutral_text)
+
+            # Exibir as duas word clouds lado a lado
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("Negative Sentiment")
+                plt.figure(figsize=(5, 5))
+                plt.imshow(wordcloud_negative, interpolation='bilinear')
+                plt.axis('off')
+                st.pyplot(plt)
+            
+            with col2:
+                st.write("Positive Sentiment")
+                plt.figure(figsize=(5, 5))
+                plt.imshow(wordcloud_neutral, interpolation='bilinear')
+                plt.axis('off')
+                st.pyplot(plt)
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
