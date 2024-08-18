@@ -18,9 +18,12 @@ import pyLDAvis
 import pyLDAvis.gensim_models as gensimvis
 import plotly.io as pio
 
-# Baixar stopwords
-nltk.download('stopwords')
-stop_words = stopwords.words('english')
+# Verificar se as stopwords já estão disponíveis
+try:
+    stop_words = stopwords.words('english')
+except LookupError:
+    st.error("Stopwords do NLTK não estão disponíveis no ambiente. Por favor, execute 'nltk.download('stopwords')' no seu ambiente local antes de rodar este script.")
+    stop_words = []
 
 # Função para análise LDA
 def lda_relevant_terms(df):
