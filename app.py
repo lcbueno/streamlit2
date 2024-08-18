@@ -56,41 +56,34 @@ if st.sidebar.button("NLP"):
 
 if st.sidebar.button("Overview Data"):
     st.session_state['page'] = 'Overview'
-
 if st.sidebar.button("Regional Sales"):
     st.session_state['page'] = 'Regional Sales'
-
 if st.sidebar.button("Vehicle Sales"):
     st.session_state['page'] = 'Vendas Carros'
-
 if st.sidebar.button("Customer Profile"):
     st.session_state['page'] = 'Perfil do Cliente'
 
-# Botão de upload de múltiplos arquivos CSV
-uploaded_files = st.sidebar.file_uploader("Choose CSV files", type="csv", accept_multiple_files=True)
+# Botão de upload do arquivo CSV abaixo dos botões de seleção de página
+uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
 
 # Inicializar o estado da sessão para a página principal
 if 'page' not in st.session_state:
-    st.session_state['page'] = 'Overview'
+    st.session_state['page'] = 'Overview Data'
 
-if uploaded_files:
-    # Carregar e concatenar os datasets com a codificação correta
-    dfs = []
-    for uploaded_file in uploaded_files:
-        df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
-        dfs.append(df)
-    combined_df = pd.concat(dfs, ignore_index=True)
+if uploaded_file is not None:
+    # Carregar o dataset com a codificação correta
+    df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
 
     # Converter a coluna "Date" para datetime sem exibir a mensagem de aviso
-    combined_df['Date'] = pd.to_datetime(combined_df['Date'], dayfirst=True, errors='coerce')
+    df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
 
     # Remover qualquer linha com datas inválidas (NaT)
-    combined_df = combined_df.dropna(subset=['Date'])
+    df = df.dropna(subset=['Date'])
 
     # Aplicar filtros (sem mostrar no layout)
-    regions = combined_df['Dealer_Region'].unique()
-    min_date = combined_df['Date'].min().date()
-    max_date = combined_df['Date'].max().date()
+    regions = df['Dealer_Region'].unique()
+    min_date = df['Date'].min().date()
+    max_date = df['Date'].max().date()
     selected_region = regions  # Aplica automaticamente todas as regiões
     selected_dates = [min_date, max_date]  # Aplica automaticamente o intervalo completo
 
@@ -98,14 +91,13 @@ if uploaded_files:
     selected_dates = pd.to_datetime(selected_dates)
 
     # Filtrando o DataFrame para todas as páginas
-    filtered_df = combined_df[(combined_df['Dealer_Region'].isin(selected_region)) & 
-                              (combined_df['Date'].between(selected_dates[0], selected_dates[1]))]
+    filtered_df = df[(df['Dealer_Region'].isin(selected_region)) & 
+                     (df['Date'].between(selected_dates[0], selected_dates[1]))]
 
     # Página: Visão Geral Dados
     if st.session_state['page'] == "Overview":
         st.title('Dashboard Yamaha - Overview Data')
-        st.write("DataFrame Visualization:")
-        st.dataframe(filtered_df, width=1500, height=600)
+        # [seu código de visualização para Overview Data]
 
     # Página: NLP (Nova página)
     elif st.session_state['page'] == "NLP":
@@ -116,23 +108,16 @@ if uploaded_files:
     # Página: Vendas Regionais
     elif st.session_state['page'] == "Regional Sales":
         st.title('Dashboard Yamaha - Regional Sales')
-        sales_by_region = filtered_df['Dealer_Region'].value_counts().reset_index()
-        sales_by_region.columns = ['Dealer_Region', 'count']
-        fig1 = px.pie(sales_by_region, names='Dealer_Region', values='count', title='Sales by Region')
-        st.plotly_chart(fig1)
+        # [seu código de visualização para Regional Sales]
 
     # Página: Vendas Carros
     elif st.session_state['page'] == "Vendas Carros":
         st.title('Dashboard Yamaha - Vehicle Sales')
-        avg_price_by_body = filtered_df.groupby('Body Style')['Price ($)'].mean().reset_index()
-        fig2 = px.bar(avg_price_by_body, x='Body Style', y='Price ($)', title='Average Revenue by Car Type')
-        st.plotly_chart(fig2)
+        # [seu código de visualização para Vendas Carros]
 
     # Página: Perfil do Cliente
     elif st.session_state['page'] == "Perfil do Cliente":
         st.title('Dashboard Yamaha - Customer Profile')
-        gender_distribution = filtered_df.groupby(['Dealer_Region', 'Gender']).size().reset_index(name='Counts')
-        fig3 = px.bar(gender_distribution, x='Dealer_Region', y='Counts', color='Gender', barmode='group', title='Gender Distribution by Region')
-        st.plotly_chart(fig3)
+        # [seu código de visualização para Perfil do Cliente]
 else:
-    st.warning("Por favor, carregue um ou mais arquivos CSV para visualizar os dados.")
+    st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
