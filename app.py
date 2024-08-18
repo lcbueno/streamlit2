@@ -370,7 +370,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         # Exibir a nuvem de palavras
         plt.figure(figsize=(10, 5))
         plt.imshow(wordcloud, interpolation='bilinear')
-        plt.title('Word Cloud - Positive Reviews')
+        plt.title('Most Frequent Words')
         plt.axis('off')
         st.pyplot(plt)
 
