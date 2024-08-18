@@ -68,7 +68,7 @@ if 'page' not in st.session_state:
     st.session_state['page'] = 'Overview Data'
 
 # Variáveis para armazenar os DataFrames processados
-dfs = []
+df_sales = None
 df_nlp = None
 
 # Processar os arquivos CSV carregados
@@ -76,36 +76,30 @@ if uploaded_files:
     for uploaded_file in uploaded_files:
         df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
         
-        # Verifica se o arquivo contém a coluna 'Date'
+        # Verifica se o arquivo contém a coluna 'Date' para o dataset de vendas
         if 'Date' in df.columns:
             df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
             df = df.dropna(subset=['Date'])
-            dfs.append(df)
-        else:
-            st.warning(f"O arquivo {uploaded_file.name} não contém a coluna 'Date' e será ignorado.")
-
+            df_sales = df
         # Verificar se o arquivo carregado é o dataset de NLP
-        if 'sentiment score' in df.columns and 'brand_name' in df.columns:
+        elif 'sentiment score' in df.columns and 'brand_name' in df.columns:
             df_nlp = df
+        else:
+            st.warning(f"O arquivo {uploaded_file.name} não contém as colunas necessárias para análise e será ignorado.")
 
-# Combinar os DataFrames se houver mais de um
-if dfs:
-    if len(dfs) > 1:
-        df_combined = pd.concat(dfs, ignore_index=True)
-    else:
-        df_combined = dfs[0]
-
+# Tratamento do dataset de vendas
+if df_sales is not None:
     # Aplicar filtros (sem mostrar no layout)
-    regions = df_combined['Dealer_Region'].unique()
-    min_date = df_combined['Date'].min().date()
-    max_date = df_combined['Date'].max().date()
+    regions = df_sales['Dealer_Region'].unique()
+    min_date = df_sales['Date'].min().date()
+    max_date = df_sales['Date'].max().date()
     selected_region = regions  # Aplica automaticamente todas as regiões
     selected_dates = [min_date, max_date]  # Aplica automaticamente o intervalo completo
 
     selected_dates = pd.to_datetime(selected_dates)
 
-    filtered_df = df_combined[(df_combined['Dealer_Region'].isin(selected_region)) & 
-                              (df_combined['Date'].between(selected_dates[0], selected_dates[1]))]
+    filtered_df = df_sales[(df_sales['Dealer_Region'].isin(selected_region)) & 
+                           (df_sales['Date'].between(selected_dates[0], selected_dates[1]))]
 
     # Página: Visão Geral Dados
     if st.session_state['page'] == "Overview":
@@ -235,136 +229,132 @@ if dfs:
             plt.yticks(fontsize=12)
             st.pyplot(plt)
 
-        # Página: Vendas Carros
-        elif st.session_state['page'] == "Vendas Carros":
-            st.title('Dashboard Yamaha - Vehicle Sales')
+    # Página: Vendas Carros
+    elif st.session_state['page'] == "Vendas Carros":
+        st.title('Dashboard Yamaha - Vehicle Sales')
 
-            # Inicializar o estado da sessão para os gráficos se ainda não foi definido
-            if 'chart_type' not in st.session_state:
-                st.session_state['chart_type'] = 'Receita Média por Tipo de Carro'
+        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        if 'chart_type' not in st.session_state:
+            st.session_state['chart_type'] = 'Receita Média por Tipo de Carro'
 
-            # Botões no topo para escolher o gráfico
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                if st.button("Average Revenue by Car Type"):
-                    st.session_state['chart_type'] = "Receita Média por Tipo de Carro"
-            with col2:
-                if st.button("Top 10 Companies by Revenue"):
-                    st.session_state['chart_type'] = "Top 10 Empresas por Receita"
-            with col3:
-                if st.button("Transmission Distribution by Engine"):
-                    st.session_state['chart_type'] = "Distribuição de Transmissão por Motor"
+        # Botões no topo para escolher o gráfico
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("Average Revenue by Car Type"):
+                st.session_state['chart_type'] = "Receita Média por Tipo de Carro"
+        with col2:
+            if st.button("Top 10 Companies by Revenue"):
+                st.session_state['chart_type'] = "Top 10 Empresas por Receita"
+        with col3:
+            if st.button("Transmission Distribution by Engine"):
+                st.session_state['chart_type'] = "Distribuição de Transmissão por Motor"
 
-            # Exibir o gráfico com base na escolha do botão
-            if st.session_state['chart_type'] == 'Receita Média por Tipo de Carro':
-                avg_price_by_body = filtered_df.groupby('Body Style')['Price ($)'].mean().reset_index()
-                fig2 = px.bar(avg_price_by_body, x='Body Style', y='Price ($)', title='Average Revenue by Car Type')
-                st.plotly_chart(fig2)
+        # Exibir o gráfico com base na escolha do botão
+        if st.session_state['chart_type'] == 'Receita Média por Tipo de Carro':
+            avg_price_by_body = filtered_df.groupby('Body Style')['Price ($)'].mean().reset_index()
+            fig2 = px.bar(avg_price_by_body, x='Body Style', y='Price ($)', title='Average Revenue by Car Type')
+            st.plotly_chart(fig2)
 
-            elif st.session_state['chart_type'] == 'Top 10 Empresas por Receita':
-                top_companies = filtered_df.groupby('Company')['Price ($)'].sum().reset_index().sort_values(by='Price ($)', ascending=False).head(10)
-                fig5 = px.bar(top_companies, x='Company', y='Price ($)', title='Top 10 Companies by Revenue')
-                st.plotly_chart(fig5)
+        elif st.session_state['chart_type'] == 'Top 10 Empresas por Receita':
+            top_companies = filtered_df.groupby('Company')['Price ($)'].sum().reset_index().sort_values(by='Price ($)', ascending=False).head(10)
+            fig5 = px.bar(top_companies, x='Company', y='Price ($)', title='Top 10 Companies by Revenue')
+            st.plotly_chart(fig5)
 
-            elif st.session_state['chart_type'] == 'Distribuição de Transmissão por Motor':
-                transmission_distribution = filtered_df.groupby(['Engine', 'Transmission']).size().reset_index(name='Counts')
-                fig6 = px.bar(transmission_distribution, x='Engine', y='Counts', color='Transmission', barmode='group', title='Transmission Distribution by Engine')
-                st.plotly_chart(fig6)
+        elif st.session_state['chart_type'] == 'Distribuição de Transmissão por Motor':
+            transmission_distribution = filtered_df.groupby(['Engine', 'Transmission']).size().reset_index(name='Counts')
+            fig6 = px.bar(transmission_distribution, x='Engine', y='Counts', color='Transmission', barmode='group', title='Transmission Distribution by Engine')
+            st.plotly_chart(fig6)
 
-        # Página: Perfil do Cliente
-        elif st.session_state['page'] == "Perfil do Cliente":
-            st.title('Dashboard Yamaha - Customer Profile')
+    # Página: Perfil do Cliente
+    elif st.session_state['page'] == "Perfil do Cliente":
+        st.title('Dashboard Yamaha - Customer Profile')
 
-            # Inicializar o estado da sessão para os gráficos se ainda não foi definido
-            if 'chart_type' not in st.session_state:
-                st.session_state['chart_type'] = 'Distribuição de Gênero por Região'
+        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        if 'chart_type' not in st.session_state:
+            st.session_state['chart_type'] = 'Distribuição de Gênero por Região'
 
-            # Botões no topo para escolher o gráfico
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                if st.button("Gender Distribution by Region"):
-                    st.session_state['chart_type'] = "Distribuição de Gênero por Região"
-            with col2:
-                if st.button("Top 10 Models by Gender"):
-                    st.session_state['chart_type'] = "Top 10 Modelos por Gênero"
+        # Botões no topo para escolher o gráfico
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("Gender Distribution by Region"):
+                st.session_state['chart_type'] = "Distribuição de Gênero por Região"
+        with col2:
+            if st.button("Top 10 Models by Gender"):
+                st.session_state['chart_type'] = "Top 10 Modelos por Gênero"
 
-            # Exibir o gráfico com base na escolha do botão
-            if st.session_state['chart_type'] == 'Distribuição de Gênero por Região':
-                gender_distribution = filtered_df.groupby(['Dealer_Region', 'Gender']).size().reset_index(name='Counts')
-                fig3 = px.bar(gender_distribution, x='Dealer_Region', y='Counts', color='Gender', barmode='group', title='Gender Distribution by Region')
-                st.plotly_chart(fig3)
+        # Exibir o gráfico com base na escolha do botão
+        if st.session_state['chart_type'] == 'Distribuição de Gênero por Região':
+            gender_distribution = filtered_df.groupby(['Dealer_Region', 'Gender']).size().reset_index(name='Counts')
+            fig3 = px.bar(gender_distribution, x='Dealer_Region', y='Counts', color='Gender', barmode='group', title='Gender Distribution by Region')
+            st.plotly_chart(fig3)
 
-            elif st.session_state['chart_type'] == 'Top 10 Modelos por Gênero':
-                top_10_male_models = filtered_df[filtered_df['Gender'] == 'Male']['Model'].value_counts().head(10)
-                top_10_female_models = filtered_df[filtered_df['Gender'] == 'Female']['Model'].value_counts().head(10)
+        elif st.session_state['chart_type'] == 'Top 10 Modelos por Gênero':
+            top_10_male_models = filtered_df[filtered_df['Gender'] == 'Male']['Model'].value_counts().head(10)
+            top_10_female_models = filtered_df[filtered_df['Gender'] == 'Female']['Model'].value_counts().head(10)
 
-                top_10_models_df = pd.DataFrame({
-                    'Male': top_10_male_models,
-                    'Female': top_10_female_models
-                }).fillna(0)
+            top_10_models_df = pd.DataFrame({
+                'Male': top_10_male_models,
+                'Female': top_10_female_models
+            }).fillna(0)
 
-                top_10_models_df_sorted = top_10_models_df.sort_values(by=['Male', 'Female'], ascending=False)
+            top_10_models_df_sorted = top_10_models_df.sort_values(by=['Male', 'Female'], ascending=False)
 
-                fig7 = px.bar(top_10_models_df_sorted, 
-                              x=top_10_models_df_sorted.index, 
-                              y=['Male', 'Female'], 
-                              title='Top 10 Models by Gender',
-                              labels={'value': 'Number of Sales', 'index': 'Models'},
-                              barmode='group')
+            fig7 = px.bar(top_10_models_df_sorted, 
+                          x=top_10_models_df_sorted.index, 
+                          y=['Male', 'Female'], 
+                          title='Top 10 Models by Gender',
+                          labels={'value': 'Number of Sales', 'index': 'Models'},
+                          barmode='group')
 
-                st.plotly_chart(fig7)
+            st.plotly_chart(fig7)
         
-        # Página: NLP
-        elif st.session_state['page'] == "NLP":
-            st.title('Dashboard Yamaha - NLP Analysis')
+# Tratamento do dataset de NLP
+if df_nlp is not None and st.session_state['page'] == "NLP":
+    st.title('Dashboard Yamaha - NLP Analysis')
 
-            # Botão no topo para escolher o gráfico de Análise de Sentimento
-            col1 = st.columns(1)
-            with col1:
-                if st.button("Sentiment Analysis"):
-                    st.session_state['chart_type'] = "Sentiment Analysis"
+    # Botão no topo para escolher o gráfico de Análise de Sentimento
+    col1 = st.columns(1)
+    with col1:
+        if st.button("Sentiment Analysis"):
+            st.session_state['chart_type'] = "Sentiment Analysis"
 
-            # Verificar se o dataset de NLP foi carregado
-            if df_nlp is not None:
-                # Extrair os componentes do sentimento de forma correta
-                df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
-                df_nlp['sentiment_pos'] = df_sentiment_scores['pos']
-                df_nlp['sentiment_neg'] = df_sentiment_scores['neg']
-                df_nlp['sentiment_neu'] = df_sentiment_scores['neu']
+    if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
+        # Extrair os componentes do sentimento de forma correta
+        df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
+        df_nlp['sentiment_pos'] = df_sentiment_scores['pos']
+        df_nlp['sentiment_neg'] = df_sentiment_scores['neg']
+        df_nlp['sentiment_neu'] = df_sentiment_scores['neu']
 
-                # Calcular a média dos sentimentos por marca
-                brand_sentiment = df_nlp.groupby('brand_name').agg({
-                    'sentiment_pos': 'mean',
-                    'sentiment_neg': 'mean',
-                    'sentiment_neu': 'mean'
-                }).reset_index()
+        # Calcular a média dos sentimentos por marca
+        brand_sentiment = df_nlp.groupby('brand_name').agg({
+            'sentiment_pos': 'mean',
+            'sentiment_neg': 'mean',
+            'sentiment_neu': 'mean'
+        }).reset_index()
 
-                # Transformar os dados para um formato longo para facilitar a plotagem
-                brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
-                                                              value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
-                                                              var_name='Sentimento', value_name='Média')
+        # Transformar os dados para um formato longo para facilitar a plotagem
+        brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
+                                                      value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
+                                                      var_name='Sentimento', value_name='Média')
 
-                # Mapeamento de nomes mais legíveis
-                brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
-                    'sentiment_pos': 'Positivo',
-                    'sentiment_neg': 'Negativo',
-                    'sentiment_neu': 'Neutro'
-                })
+        # Mapeamento de nomes mais legíveis
+        brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
+            'sentiment_pos': 'Positivo',
+            'sentiment_neg': 'Negativo',
+            'sentiment_neu': 'Neutro'
+        })
 
-                # Criar gráfico interativo usando Plotly
-                fig = px.bar(brand_sentiment_melted, 
-                             x='brand_name', 
-                             y='Média', 
-                             color='Sentimento', 
-                             barmode='group',
-                             labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
-                             title='Comparação de Sentimentos por Marca')
+        # Criar gráfico interativo usando Plotly
+        fig = px.bar(brand_sentiment_melted, 
+                     x='brand_name', 
+                     y='Média', 
+                     color='Sentimento', 
+                     barmode='group',
+                     labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
+                     title='Comparação de Sentimentos por Marca')
 
-                # Exibir o gráfico interativo
-                st.plotly_chart(fig)
+        # Exibir o gráfico interativo
+        st.plotly_chart(fig)
 
-            else:
-                st.warning("Nenhum dataset de NLP foi carregado ou o arquivo não contém as colunas necessárias para a análise de sentimentos.")
-        
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
