@@ -220,7 +220,6 @@ if df_sales is not None and st.session_state['page'] != "NLP":
                 plt.gca().tick_params(axis='y', colors='black')
                 st.pyplot(plt)
 
-
             plot_sales(selected_region_time_series, selected_model_time_series)
 
         elif st.session_state['chart_type'] == 'Heatmap do Mix de Produtos':
@@ -437,18 +436,6 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         fig = px.bar(top_20_bigrams, x=bigram_strs, y='Count', title='Top 20 Bigrams', labels={'x': 'Bigram', 'Count': 'Count'})
         st.plotly_chart(fig)
 
-    
-
-    
-    # Defina uma paleta de cores personalizada semelhante à da sua imagem
-    colorscale = [
-        [0.0, "rgb(0, 0, 139)"],   # Navy (equivalente ao roxo escuro)
-        [0.2, "rgb(75, 0, 130)"],  # Indigo
-        [0.4, "rgb(138, 43, 226)"], # BlueViolet
-        [0.6, "rgb(255, 0, 255)"],  # Magenta
-        [0.8, "rgb(255, 165, 0)"],  # Orange
-        [1.0, "rgb(255, 255, 0)"],  ]
-        
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Trigramas":
         # Função para gerar trigramas
         def gerar_trigrams(texto):
@@ -480,12 +467,14 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
                      title='Top 20 Trigrams', 
                      labels={'x': 'Trigram', 'Count': 'Count'},
                      color='Count',
-                     color_continuous_scale=colorscale)  # Aplicando a paleta de cores
+                     color_continuous_scale=[
+                         [0.0, "rgb(0, 0, 139)"],   # Navy (equivalente ao roxo escuro)
+                         [0.2, "rgb(75, 0, 130)"],  # Indigo
+                         [0.4, "rgb(138, 43, 226)"], # BlueViolet
+                         [0.6, "rgb(255, 0, 255)"],  # Magenta
+                         [0.8, "rgb(255, 165, 0)"],  # Orange
+                         [1.0, "rgb(255, 255, 0)"]   # Yellow
+                     ])  # Aplicando a paleta de cores
         st.plotly_chart(fig)
-
-
-
-
-
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
