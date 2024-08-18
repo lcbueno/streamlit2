@@ -295,12 +295,15 @@ if df_sales is not None and st.session_state['page'] != "NLP":
         if 'chart_type' not in st.session_state:
             st.session_state['chart_type'] = 'Distribuição de Gênero por Região'
 
-        # Botões no topo para escolher o gráfico
-        col1, col2, col3 = st.columns(3)
-        with col1:
+        # Primeira linha de botões para a página "Customer Profile"
+        col1 = st.columns(1)
+        with col1[0]:
             if st.button("Gender Distribution by Region"):
                 st.session_state['chart_type'] = "Distribuição de Gênero por Região"
-        with col2:
+        
+        # Segunda linha de botões para a página "Customer Profile"
+        col2 = st.columns(1)
+        with col2[0]:
             if st.button("Top 10 Models by Gender"):
                 st.session_state['chart_type'] = "Top 10 Modelos por Gênero"
 
