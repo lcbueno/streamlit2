@@ -61,21 +61,32 @@ if st.sidebar.button("NLP"):
     st.session_state['page'] = 'NLP'  # Adiciona a funcionalidade do botão NLP
 
 # Botão de upload do arquivo CSV abaixo dos botões de seleção de página
-uploaded_file = st.sidebar.file_uploader("Choose a CSV file", type="csv")
+uploaded_files = st.sidebar.file_uploader("Choose CSV files", type="csv", accept_multiple_files=True)
 
 # Inicializar o estado da sessão para a página principal
 if 'page' not in st.session_state:
     st.session_state['page'] = 'Overview Data'
 
-if uploaded_file is not None:
-    # Carregar o dataset com a codificação correta
-    df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
+if uploaded_files:
+    dfs = []  # Lista para armazenar os DataFrames de cada arquivo
 
-    # Converter a coluna "Date" para datetime sem exibir a mensagem de aviso
-    df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
+    # Carregar cada arquivo e converter para DataFrame
+    for uploaded_file in uploaded_files:
+        df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
+        
+        # Converter a coluna "Date" para datetime sem exibir a mensagem de aviso
+        df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
 
-    # Remover qualquer linha com datas inválidas (NaT)
-    df = df.dropna(subset=['Date'])
+        # Remover qualquer linha com datas inválidas (NaT)
+        df = df.dropna(subset=['Date'])
+        
+        dfs.append(df)
+
+    # Se houver mais de um DataFrame, combine-os em um único DataFrame
+    if len(dfs) > 1:
+        df = pd.concat(dfs, ignore_index=True)
+    else:
+        df = dfs[0]
 
     # Aplicar filtros (sem mostrar no layout)
     regions = df['Dealer_Region'].unique()
