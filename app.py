@@ -17,6 +17,7 @@ from nltk.corpus import stopwords
 import pyLDAvis
 import pyLDAvis.gensim_models as gensimvis
 import plotly.io as pio
+import streamlit.components.v1 as components
 
 # Verificar se as stopwords já estão disponíveis
 try:
@@ -45,8 +46,13 @@ def lda_relevant_terms(df):
     # Preparar visualização interativa com pyLDAvis
     lda_vis = gensimvis.prepare(lda_model, corpus, dictionary)
 
-    # Exibir visualização interativa
-    pyLDAvis.display(lda_vis)
+    # Salvar a visualização como um HTML temporário
+    pyLDAvis.save_html(lda_vis, 'lda_vis.html')
+
+    # Exibir a visualização no Streamlit
+    with open('lda_vis.html', 'r') as f:
+        html_string = f.read()
+    components.html(html_string, height=800)
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
