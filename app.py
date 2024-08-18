@@ -4,6 +4,16 @@ import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
+from nltk import ngrams
+from collections import Counter
+from nltk.sentiment import SentimentIntensityAnalyzer
+import nltk
+
+# Verificar se o léxico vader já está disponível e, se necessário, fazer o download
+try:
+    nltk.data.find('sentiment/vader_lexicon.zip')
+except LookupError:
+    nltk.download('vader_lexicon')
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -327,10 +337,6 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
 
     # Adicionar o processamento necessário para criar a coluna 'sentiment_category'
     if 'sentiment_category' not in df_nlp.columns:
-        from nltk.sentiment import SentimentIntensityAnalyzer
-        import nltk
-        nltk.download('vader_lexicon')
-
         sia = SentimentIntensityAnalyzer()
         df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
         df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(
@@ -390,12 +396,6 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         st.pyplot(plt)
 
     elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Bigramas":
-        import pandas as pd
-        import seaborn as sns
-        import matplotlib.pyplot as plt
-        from nltk import ngrams
-        from collections import Counter
-
         # Garantir que todas as reviews sejam strings e tratar NaNs
         df_nlp['review'] = df_nlp['review'].astype(str).fillna('')
 
@@ -433,9 +433,6 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         axes[1].set_title(f'Top {N} Most Common Bigrams in Positive Reviews (Originally Neutral)', fontsize=15)
 
         st.pyplot(fig)
-
-
-
 
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
