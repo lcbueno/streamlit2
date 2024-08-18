@@ -395,6 +395,31 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         # Criar gráfico de barras interativo
         fig = px.bar(top_20_words, x='Word', y='Count', title='Top 20 Words', labels={'Word': 'Word', 'Count': 'Count'})
         st.plotly_chart(fig)
+    
+    elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Bigramas":
+        # Função para gerar bigramas
+        def gerar_bigrams(texto):
+            palavras = texto.split()
+            bigramas = [(palavras[i], palavras[i+1]) for i in range(len(palavras)-1)]
+            return bigramas
+
+        # Gerar bigramas para todas as reviews
+        df_nlp['bigrams'] = df_nlp['review'].apply(gerar_bigrams)
+        
+        # Unificar os bigramas em uma única lista para contagem
+        all_bigrams = [bigram for sublist in df_nlp['bigrams'] for bigram in sublist]
+        
+        # Contagem de frequências de bigramas
+        bigram_counts = pd.Series(all_bigrams).value_counts().reset_index()
+        bigram_counts.columns = ['Bigram', 'Count']
+
+        # Selecionar os 20 bigramas mais frequentes
+        top_20_bigrams = bigram_counts.head(20)
+
+        # Criar gráfico interativo de bigramas
+        bigram_strs = top_20_bigrams['Bigram'].apply(lambda x: ' '.join(x))
+        fig = px.bar(top_20_bigrams, x=bigram_strs, y='Count', title='Top 20 Bigrams', labels={'x': 'Bigram', 'Count': 'Count'})
+        st.plotly_chart(fig)
 
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
