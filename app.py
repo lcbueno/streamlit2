@@ -22,7 +22,7 @@ stop_words = stopwords.words('english')
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
-@@ -141,13 +123,10 @@
+
             st.session_state['chart_type'] = 'Sentiment Analysis'
 
         # Botões no topo para escolher o gráfico
@@ -38,7 +38,7 @@ image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.pn
 
         # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Sentiment Analysis':
-@@ -182,29 +161,211 @@
+
             # Exibir o gráfico interativo
             st.plotly_chart(fig)
 
