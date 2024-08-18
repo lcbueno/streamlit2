@@ -434,19 +434,19 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
 
         # Mapeamento de nomes mais legíveis
         brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
-            'sentiment_pos': 'Positive',
-            'sentiment_neg': 'Negative',
-            'sentiment_neu': 'Neutral'
+            'sentiment_pos': 'Positivo',
+            'sentiment_neg': 'Negativo',
+            'sentiment_neu': 'Neutro'
         })
 
         # Criar gráfico interativo usando Plotly
         fig = px.bar(brand_sentiment_melted, 
                      x='brand_name', 
                      y='Média', 
-                     color='Sentiment', 
+                     color='Sentimento', 
                      barmode='group',
-                     labels={'brand_name': 'Brand Name', 'Média': 'Sentiment Average'},
-                     title='Comparison of Sentiments by Brand',
+                     labels={'brand_name': 'Marca', 'Média': 'Sentimento Médio'},
+                     title='Comparação de Sentimentos por Marca',
                      color_continuous_scale=colorscale)  # Aplicando a paleta de cores
 
         # Exibir o gráfico interativo
@@ -543,4 +543,5 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
                      color='Count',
                      color_continuous_scale=colorscale)  # Aplicando a paleta de cores
         st.plotly_chart(fig)
-
+else:
+    st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
