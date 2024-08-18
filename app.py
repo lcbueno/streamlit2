@@ -318,7 +318,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     st.title('Dashboard Yamaha - NLP Analysis')
 
     # Botões no topo para escolher o gráfico
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
@@ -328,6 +328,9 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     with col3:
         if st.button("Top word frequency"):
             st.session_state['chart_type'] = "Top word frequency"
+    with col4:
+        if st.button("Bigramas"):
+            st.session_state['chart_type'] = "Bigramas"
 
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
         # Extrair os componentes do sentimento de forma correta
