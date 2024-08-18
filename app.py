@@ -56,10 +56,13 @@ if st.sidebar.button("NLP"):
 
 if st.sidebar.button("Overview Data"):
     st.session_state['page'] = 'Overview'
+
 if st.sidebar.button("Regional Sales"):
     st.session_state['page'] = 'Regional Sales'
+
 if st.sidebar.button("Vehicle Sales"):
     st.session_state['page'] = 'Vendas Carros'
+
 if st.sidebar.button("Customer Profile"):
     st.session_state['page'] = 'Perfil do Cliente'
 
@@ -68,7 +71,7 @@ uploaded_files = st.sidebar.file_uploader("Choose CSV files", type="csv", accept
 
 # Inicializar o estado da sessão para a página principal
 if 'page' not in st.session_state:
-    st.session_state['page'] = 'Overview Data'
+    st.session_state['page'] = 'Overview'
 
 if uploaded_files:
     # Carregar e concatenar os datasets com a codificação correta
@@ -101,7 +104,8 @@ if uploaded_files:
     # Página: Visão Geral Dados
     if st.session_state['page'] == "Overview":
         st.title('Dashboard Yamaha - Overview Data')
-        # [seu código de visualização para Overview Data]
+        st.write("DataFrame Visualization:")
+        st.dataframe(filtered_df, width=1500, height=600)
 
     # Página: NLP (Nova página)
     elif st.session_state['page'] == "NLP":
@@ -112,16 +116,23 @@ if uploaded_files:
     # Página: Vendas Regionais
     elif st.session_state['page'] == "Regional Sales":
         st.title('Dashboard Yamaha - Regional Sales')
-        # [seu código de visualização para Regional Sales]
+        sales_by_region = filtered_df['Dealer_Region'].value_counts().reset_index()
+        sales_by_region.columns = ['Dealer_Region', 'count']
+        fig1 = px.pie(sales_by_region, names='Dealer_Region', values='count', title='Sales by Region')
+        st.plotly_chart(fig1)
 
     # Página: Vendas Carros
     elif st.session_state['page'] == "Vendas Carros":
         st.title('Dashboard Yamaha - Vehicle Sales')
-        # [seu código de visualização para Vendas Carros]
+        avg_price_by_body = filtered_df.groupby('Body Style')['Price ($)'].mean().reset_index()
+        fig2 = px.bar(avg_price_by_body, x='Body Style', y='Price ($)', title='Average Revenue by Car Type')
+        st.plotly_chart(fig2)
 
     # Página: Perfil do Cliente
     elif st.session_state['page'] == "Perfil do Cliente":
         st.title('Dashboard Yamaha - Customer Profile')
-        # [seu código de visualização para Perfil do Cliente]
+        gender_distribution = filtered_df.groupby(['Dealer_Region', 'Gender']).size().reset_index(name='Counts')
+        fig3 = px.bar(gender_distribution, x='Dealer_Region', y='Counts', color='Gender', barmode='group', title='Gender Distribution by Region')
+        st.plotly_chart(fig3)
 else:
     st.warning("Por favor, carregue um ou mais arquivos CSV para visualizar os dados.")
