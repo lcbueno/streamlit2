@@ -4,6 +4,10 @@ import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
+import plotly.graph_objs as go
+from nltk import word_tokenize
+from nltk.sentiment import SentimentIntensityAnalyzer
+import nltk
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -227,7 +231,7 @@ if df_sales is not None and st.session_state['page'] != "NLP":
             plt.xlabel('Body Style', fontsize=14)
             plt.ylabel('Reseller Region', fontsize=14)
             plt.xticks(fontsize=12)
-            plt.yticks(fontsize=12)
+            plt.yticks(fontsize(12))
             st.pyplot(plt)
 
     # Página: Vendas Carros
@@ -325,8 +329,6 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         if st.button("Top word frequency"):
             st.session_state['chart_type'] = "Top word frequency"
 
-
-
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
         # Extrair os componentes do sentimento de forma correta
         df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
@@ -378,8 +380,53 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
         plt.title('Most Frequent Words')
         plt.axis('off')
         st.pyplot(plt)
+    
+    elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Top word frequency":
+        # Garantir que o nltk esteja configurado
+        nltk.download('vader_lexicon')
+        sia = SentimentIntensityAnalyzer()
+        df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
+        df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(lambda x: 'Positive' if x >= 0.05 else ('Negative' if x <= -0.05 else 'Neutral'))
 
+        # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
+        df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
+        df_neutral = df_nlp[df_nlp['sentiment_category'] == 'Neutral']  # Será tratado como Positivo
 
+        # Contagem de palavras para cada categoria
+        negative_words = df_negative['review'].str.split(expand=True).unstack().value_counts()
+        neutral_words = df_neutral['review'].str.split(expand=True).unstack().value_counts()
+
+        # Criar gráfico de barras para palavras negativas
+        data_negative = [go.Bar(
+                    x = negative_words.index.values[:30],
+                    y = negative_words.values[:30],
+                    marker=dict(colorscale='Jet',
+                                color=negative_words.values[:30]),
+                    text=''
+        )]
+
+        layout_negative = go.Layout(
+            title='Top 30 Word Frequencies in Negative Reviews'
+        )
+
+        fig_negative = go.Figure(data=data_negative, layout=layout_negative)
+        st.plotly_chart(fig_negative)
+
+        # Criar gráfico de barras para palavras neutras (renomeadas como positivas)
+        data_neutral = [go.Bar(
+                    x = neutral_words.index.values[:30],
+                    y = neutral_words.values[:30],
+                    marker=dict(colorscale='Jet',
+                                color=neutral_words.values[:30]),
+                    text=''
+        )]
+
+        layout_neutral = go.Layout(
+            title='Top 30 Word Frequencies in Positive Reviews'
+        )
+
+        fig_neutral = go.Figure(data=data_neutral, layout=layout_neutral)
+        st.plotly_chart(fig_neutral)
 
 else:
     st.warning("Por favor, carregue um arquivo CSV para visualizar os dados.")
