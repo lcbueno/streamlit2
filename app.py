@@ -88,7 +88,7 @@ if uploaded_files:
             st.warning(f"O arquivo {uploaded_file.name} não contém as colunas necessárias para análise e será ignorado.")
 
 # Tratamento do dataset de vendas
-if df_sales is not None:
+if df_sales is not None and st.session_state['page'] != "NLP":
     # Aplicar filtros (sem mostrar no layout)
     regions = df_sales['Dealer_Region'].unique()
     min_date = df_sales['Date'].min().date()
