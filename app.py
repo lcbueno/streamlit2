@@ -107,15 +107,15 @@ if df_sales is not None and st.session_state['page'] != "NLP":
     filtered_df = df_sales[(df_sales['Dealer_Region'].isin(selected_region)) & 
                            (df_sales['Date'].between(selected_dates[0], selected_dates[1]))]
 
-    # Page: Overview Data
+    # Página: Overview Data
     if st.session_state['page'] == "Overview":
         st.title('Dashboard Yamaha - Overview Data')
-
-        # Initialize the session state for charts if not yet defined
+    
+        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
         if 'chart_type' not in st.session_state:
             st.session_state['chart_type'] = 'Overview'
-
-        # Buttons at the top to choose the chart
+    
+        # Botões no topo para escolher o gráfico
         col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("Overview"):
@@ -126,17 +126,21 @@ if df_sales is not None and st.session_state['page'] != "NLP":
         with col3:
             if st.button("Download Dataset"):
                 st.session_state['chart_type'] = "Download Dataset"
-
-        # Display the chart based on the button choice
+    
+        # Exibir o gráfico com base na escolha do botão
         if st.session_state['chart_type'] == 'Overview':
-            st.write("DataFrame Visualization:")
-            st.dataframe(filtered_df, width=1500, height=600)
-
+            st.write("Sales DataFrame Visualization:")
+            st.dataframe(filtered_df, width=1500, height=300)  # Exibe o DataFrame de vendas
+    
+            if df_nlp is not None:
+                st.write("NLP DataFrame Visualization:")
+                st.dataframe(df_nlp, width=1500, height=300)  # Exibe o DataFrame de NLP
+    
         elif st.session_state['chart_type'] == 'Unique Values':
             unique_counts = filtered_df.nunique()
             st.write("Count unique values per column:")
             st.write(unique_counts)
-
+    
         elif st.session_state['chart_type'] == 'Download Dataset':
             st.download_button(
                 label="Download Full Dataset",
@@ -144,6 +148,7 @@ if df_sales is not None and st.session_state['page'] != "NLP":
                 file_name='full_dataset.csv',
                 mime='text/csv',
             )
+    
 
     # Page: Regional Sales
     elif st.session_state['page'] == "Regional Sales":
