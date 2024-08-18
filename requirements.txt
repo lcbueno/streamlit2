@@ -8,5 +8,5 @@ nltk
 pyLDAvis
 matplotlib
 wordcloud
-nltk==3.7
+nltk
 
