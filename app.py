@@ -440,15 +440,15 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     
 
     
-    # Defina uma paleta de cores personalizada semelhante à da sua imagem
-    colorscale = [
-        [0.0, "rgb(0, 0, 139)"],   # Navy (equivalente ao roxo escuro)
-        [0.2, "rgb(75, 0, 130)"],  # Indigo
-        [0.4, "rgb(138, 43, 226)"], # BlueViolet
-        [0.6, "rgb(255, 0, 255)"],  # Magenta
-        [0.8, "rgb(255, 165, 0)"],  # Orange
-        [1.0, "rgb(255, 255, 0)"],  ]
-        
+# Defina uma paleta de cores personalizada semelhante à da sua imagem
+colorscale = [
+    [0.0, "rgb(0, 0, 139)"],   # Navy (equivalente ao roxo escuro)
+    [0.2, "rgb(75, 0, 130)"],  # Indigo
+    [0.4, "rgb(138, 43, 226)"], # BlueViolet
+    [0.6, "rgb(255, 0, 255)"],  # Magenta
+    [0.8, "rgb(255, 165, 0)"],  # Orange
+    [1.0, "rgb(255, 255, 0)"],  ]
+    
 elif 'chart_type' in st.session_state and st.session_state['chart_type'] == "Trigramas":
     # Função para gerar trigramas
     def gerar_trigrams(texto):
