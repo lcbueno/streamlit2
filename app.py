@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import streamlit as st
 import plotly.express as px
 import seaborn as sns
@@ -96,14 +97,14 @@ if uploaded_file_1 is not None and uploaded_file_2 is not None:
         st.error("A coluna 'sentiment score' não foi encontrada no segundo arquivo CSV. Verifique o arquivo e tente novamente.")
 
     # Aplicar filtros (sem mostrar no layout) no primeiro dataset
-    regions = df1['Dealer_Region'].unique() if 'Dealer_Region' in df1.columns else []
+    regions = list(df1['Dealer_Region'].unique()) if 'Dealer_Region' in df1.columns else []
     min_date = df1['Date'].min().date() if 'Date' in df1.columns else None
     max_date = df1['Date'].max().date() if 'Date' in df1.columns else None
     selected_region = regions if regions else []  # Verifica se há regiões disponíveis
     selected_dates = [min_date, max_date] if min_date and max_date else []  # Aplica automaticamente o intervalo completo
 
     # Converter selected_dates para datetime64 se houver datas válidas
-    if selected_dates:
+    if selected_dates and len(selected_dates) == 2:
         selected_dates = pd.to_datetime(selected_dates)
 
     # Verifica se há regiões e datas selecionadas para filtrar
