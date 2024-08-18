@@ -7,14 +7,20 @@ import matplotlib.pyplot as plt
 import gensim
 from gensim import corpora
 from gensim.models import LdaModel
-from nltk.corpus import stopwords
-import nltk
 import pyLDAvis
 import pyLDAvis.gensim_models as gensimvis
-import plotly.io as pio
 
-# Baixar stopwords
-nltk.download('stopwords')
+import nltk
+from nltk.corpus import stopwords
+from nltk.data import find
+
+# Verificar se os stopwords estão disponíveis localmente
+try:
+    find('corpora/stopwords.zip')
+except LookupError:
+    nltk.download('stopwords')
+
+# Carregar stopwords
 stop_words = stopwords.words('english')
 
 # Caminho para a imagem
