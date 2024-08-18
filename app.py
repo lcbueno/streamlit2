@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import streamlit as st
 import seaborn as sns
@@ -11,13 +12,18 @@ import pyLDAvis.gensim_models as gensimvis
 import plotly.io as pio
 
 import nltk
-import os
 
-# Configurar o NLTK para usar o diretório local nltk_data
-nltk.data.path.append('./nltk_data')
+# Configuração para utilizar o caminho absoluto para nltk_data
+nltk_data_path = os.path.join(os.getcwd(), 'nltk_data')
+nltk.data.path.append(nltk_data_path)
 
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
+
+# Carregar os recursos explicitamente
+nltk.download('stopwords', download_dir=nltk_data_path)
+nltk.download('wordnet', download_dir=nltk_data_path)
+nltk.download('omw-1.4', download_dir=nltk_data_path)
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
