@@ -4,6 +4,12 @@ import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+
+# Inicializar o analisador de sentimentos
+nltk.download('vader_lexicon')
+sia = SentimentIntensityAnalyzer()
 
 # Caminho para a imagem
 image_path = 'https://raw.githubusercontent.com/lcbueno/streamlit/main/yamaha.png'
@@ -83,7 +89,7 @@ if uploaded_files:
             df = df.dropna(subset=['Date'])
             df_sales = df
         # Verificar se o arquivo carregado é o dataset de NLP
-        elif 'sentiment score' in df.columns and 'brand_name' in df.columns:
+        elif 'review' in df.columns:  # Verifica se existe a coluna de reviews para realizar a análise NLP
             df_nlp = df
         else:
             st.warning(f"O arquivo {uploaded_file.name} não contém as colunas necessárias para análise e será ignorado.")
@@ -324,30 +330,22 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
 
     if 'chart_type' in st.session_state:
         if st.session_state['chart_type'] == "Sentiment Analysis":
-            # Extrair os componentes do sentimento de forma correta
-            df_sentiment_scores = pd.json_normalize(df_nlp['sentiment score'].apply(eval))
-            df_nlp['sentiment_pos'] = df_sentiment_scores['pos']
-            df_nlp['sentiment_neg'] = df_sentiment_scores['neg']
-            df_nlp['sentiment_neu'] = df_sentiment_scores['neu']
+            # Garantir que todas as reviews sejam strings e tratar NaNs
+            df_nlp['review'] = df_nlp['review'].astype(str).fillna('')
+
+            # Aplicar a análise de sentimentos
+            df_nlp['sentiment_vader'] = df_nlp['review'].apply(lambda x: sia.polarity_scores(x)['compound'])
+            df_nlp['sentiment_category'] = df_nlp['sentiment_vader'].apply(lambda x: 'Positive' if x >= 0.05 else ('Negative' if x <= -0.05 else 'Neutral'))
 
             # Calcular a média dos sentimentos por marca
             brand_sentiment = df_nlp.groupby('brand_name').agg({
-                'sentiment_pos': 'mean',
-                'sentiment_neg': 'mean',
-                'sentiment_neu': 'mean'
+                'sentiment_vader': 'mean'
             }).reset_index()
 
             # Transformar os dados para um formato longo para facilitar a plotagem
             brand_sentiment_melted = brand_sentiment.melt(id_vars='brand_name', 
-                                                          value_vars=['sentiment_pos', 'sentiment_neg', 'sentiment_neu'],
+                                                          value_vars=['sentiment_vader'],
                                                           var_name='Sentimento', value_name='Média')
-
-            # Mapeamento de nomes mais legíveis
-            brand_sentiment_melted['Sentimento'] = brand_sentiment_melted['Sentimento'].map({
-                'sentiment_pos': 'Positivo',
-                'sentiment_neg': 'Negativo',
-                'sentiment_neu': 'Neutro'
-            })
 
             # Criar gráfico interativo usando Plotly
             fig = px.bar(brand_sentiment_melted, 
@@ -362,11 +360,8 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
             st.plotly_chart(fig)
 
         elif st.session_state['chart_type'] == "Word Cloud":
-            # Verificar se a coluna sentiment_category existe, caso contrário, criar
-            if 'sentiment_category' not in df_nlp.columns:
-                df_nlp['sentiment_category'] = df_nlp.apply(
-                    lambda row: 'Negative' if row['sentiment_neg'] > row['sentiment_pos'] else 'Neutral', axis=1
-                )
+            # Limpeza básica do texto para cada categoria
+            df_nlp['cleaned_review'] = df_nlp['review'].str.lower().str.replace('[^\w\s]', '', regex=True)
 
             # Filtrar para as categorias de interesse: Negativo e Neutro (renomeado para Positivo)
             df_negative = df_nlp[df_nlp['sentiment_category'] == 'Negative']
