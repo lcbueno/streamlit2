@@ -208,7 +208,7 @@ if df_sales is not None and st.session_state['page'] != "NLP":
                 plt.ylabel('Number of Sales', fontsize=14)
                 plt.grid(True, color='gray', linestyle='--', linewidth=0.5)
                 plt.xticks(fontsize=12)
-                plt.yticks(fontsize=12)
+                plt.yticks(fontsize(12)
                 plt.gca().spines['top'].set_color('none')
                 plt.gca().spines['right'].set_color('none')
                 plt.gca().set_facecolor('white')
@@ -230,8 +230,8 @@ if df_sales is not None and st.session_state['page'] != "NLP":
             plt.title('Product Mix by Region (Body Style)', fontsize=16)
             plt.xlabel('Body Style', fontsize=14)
             plt.ylabel('Reseller Region', fontsize=14)
-            plt.xticks(fontsize=12)
-            plt.yticks(fontsize=12)
+            plt.xticks(fontsize(12)
+            plt.yticks(fontsize(12)
             st.pyplot(plt)
 
     # Página: Vendas Carros
@@ -318,7 +318,7 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     st.title('Dashboard Yamaha - NLP Analysis')
 
     # Botões no topo para escolher o gráfico
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         if st.button("Sentiment Analysis"):
             st.session_state['chart_type'] = "Sentiment Analysis"
@@ -331,6 +331,9 @@ if df_nlp is not None and st.session_state['page'] == "NLP":
     with col4:
         if st.button("Bigramas"):
             st.session_state['chart_type'] = "Bigramas"
+    with col5:
+        if st.button("Trigramas"):
+            st.session_state['chart_type'] = "Trigramas"
 
     if 'chart_type' in st.session_state and st.session_state['chart_type'] == "Sentiment Analysis":
         # Extrair os componentes do sentimento de forma correta
