@@ -113,35 +113,36 @@ if st.session_state['page'] == 'Following':
             selected_lead = st.selectbox('Select Leads', leads)
             
             if selected_lead:
-                lead_info = df_american_names[df_american_names['lead'] == selected_lead].iloc[0]
+                lead_info_group = df_american_names[df_american_names['lead'] == selected_lead]
                 
-                # Display lead information
-                st.write(f"**Lead Number:** {lead_info['lead']}")
-                st.write(f"**Timestamp:** {lead_info['timestamp']}")
-                st.write(f"**City:** {lead_info['city']}")
-                st.write(f"**State:** {lead_info['state']}")
-                st.write(f"**Email:** {lead_info['email']}")
-                st.write(f"**Product:** {lead_info['motorcycles']}")
-                st.write(f"**Download:** {'Yes' if lead_info['download'] == 'yes' else 'No'}")
+                st.write(f"**Lead Number:** {selected_lead}")
                 
-                # Display version information
-                version_1 = lead_info['version 1']
-                version_2 = lead_info['version 2']
-                if version_1 and version_2:
-                    st.write("**Version:** Both Version 1 and Version 2")
-                elif version_1:
-                    st.write("**Version:** Version 1")
-                elif version_2:
-                    st.write("**Version:** Version 2")
-                else:
-                    st.write("**Version:** None")
-                
-                st.write(f"**Scheduled:** {lead_info['scheduled']}")
+                for idx, lead_info in lead_info_group.iterrows():
+                    st.write(f"---")
+                    st.write(f"**Timestamp:** {lead_info['timestamp']}")
+                    st.write(f"**City:** {lead_info['city']}")
+                    st.write(f"**State:** {lead_info['state']}")
+                    st.write(f"**Email:** {lead_info['email']}")
+                    st.write(f"**Product:** {lead_info['motorcycles']}")
+                    st.write(f"**Download:** {'Yes' if lead_info['download'] == 'yes' else 'No'}")
+                    
+                    # Display version information
+                    version_1 = lead_info['version 1']
+                    version_2 = lead_info['version 2']
+                    if version_1 and version_2:
+                        st.write("**Version:** Both Version 1 and Version 2")
+                    elif version_1:
+                        st.write("**Version:** Version 1")
+                    elif version_2:
+                        st.write("**Version:** Version 2")
+                    else:
+                        st.write("**Version:** None")
+                    
+                    st.write(f"**Scheduled:** {lead_info['scheduled']}")
         else:
             st.warning("The dataset for American names is not loaded.")
 
 # The rest of your code remains intact...
-
 
 
 
