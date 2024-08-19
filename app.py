@@ -76,7 +76,7 @@ if st.session_state['page'] == "Following":
     if st.session_state['following_chart_type'] == 'Leads':
         st.write("Leads data and analysis will be displayed here.")
 
-# Existing buttons
+# Existing buttons for other pages
 if st.sidebar.button("Overview Data"):
     st.session_state['page'] = 'Overview'
 if st.sidebar.button("Regional Sales"):
