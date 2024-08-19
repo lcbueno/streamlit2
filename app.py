@@ -126,22 +126,18 @@ if st.session_state['page'] == 'Following':
                 st.write(f"**Download:** {'Yes' if lead_info['download'] == 'yes' else 'No'}")
                 
                 # Display version information
-                version_1 = lead_info['version 1']
-                version_2 = lead_info['version 2']
-                if version_1 and version_2:
-                    st.write("**Version:** Both Version 1 and Version 2")
-                elif version_1:
-                    st.write("**Version:** Version 1")
-                elif version_2:
-                    st.write("**Version:** Version 2")
-                else:
-                    st.write("**Version:** None")
+                version_1 = 'Yes' if lead_info['version 1'] == 1 else 'No'
+                version_2 = 'Yes' if lead_info['version 2'] == 1 else 'No'
+                
+                st.write(f"**Version 1:** {version_1}")
+                st.write(f"**Version 2:** {version_2}")
                 
                 st.write(f"**Scheduled:** {lead_info['scheduled']}")
     else:
         st.warning("The dataset for American names is not loaded.")
 
 # The rest of your code remains intact...
+
 
 
 
