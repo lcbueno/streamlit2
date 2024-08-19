@@ -144,12 +144,6 @@ if st.session_state['page'] == 'Following':
     else:
         st.warning("The dataset for American names is not loaded.")
 
-# The rest of your code remains intact...
-
-
-
-
-
 
 # Sales dataset processing
 if df_sales is not None and st.session_state['page'] != "NLP":
