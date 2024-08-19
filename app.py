@@ -108,7 +108,7 @@ if st.session_state['page'] == 'Following':
     st.title("Following Dashboard")
     
     if df_american_names is not None:
-        leads = df_american_names['lead'].unique()
+        leads = sorted(df_american_names['lead'].unique())  # Sort leads in ascending order
         selected_lead = st.selectbox('Select Leads', leads)
         
         if selected_lead:
