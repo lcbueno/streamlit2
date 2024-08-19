@@ -1,0 +1,101 @@
+name,timestamp,city,state,lead,email,motorcycles,download,version 1,version 2,scheduled
+James Smith,2024-08-18 13:00:25,Memphis,TN,4322,james.smith@example.com,Yamaha YZF-R1,yes,0,0,yes
+Michael Johnson,2024-08-12 20:35:43,Fresno,CA,4313,michael.johnson@example.com,Yamaha MT-07,no,0,0,no
+Robert Williams,2024-08-11 10:59:06,San Antonio,TX,4303,robert.williams@example.com,Yamaha XTZ 250 Lander,no,0,0,no
+David Brown,2024-08-13 17:09:33,Lubbock,TX,4306,david.brown@example.com,Yamaha FZ25,no,0,1,yes
+William Jones,2024-08-10 11:04:34,San Francisco,CA,4325,william.jones@example.com,Yamaha XMAX 250,yes,0,0,no
+John Garcia,2024-08-16 05:45:31,Columbus,OH,4314,john.garcia@example.com,Yamaha Tenere 700,no,1,1,yes
+Joseph Miller,2024-08-19 03:32:18,Corpus Christi,TX,4309,joseph.miller@example.com,Yamaha Niken,no,1,1,no
+Charles Davis,2024-08-14 02:19:39,Los Angeles,CA,4304,charles.davis@example.com,Yamaha YZF-R1,no,0,0,no
+Christopher Rodriguez,2024-08-10 14:55:45,Miami,FL,4322,christopher.rodriguez@example.com,Yamaha MT-07,yes,0,1,no
+Daniel Martinez,2024-08-13 10:07:02,Lubbock,TX,4318,daniel.martinez@example.com,Yamaha XTZ 250 Lander,yes,1,1,yes
+Matthew Hernandez,2024-08-19 07:44:21,Detroit,MI,4325,matthew.hernandez@example.com,Yamaha FZ25,yes,0,0,no
+Anthony Lopez,2024-08-17 22:51:07,Houston,TX,4325,anthony.lopez@example.com,Yamaha XMAX 250,no,0,0,yes
+Mark Gonzalez,2024-08-15 15:38:32,Lincoln,NE,4325,mark.gonzalez@example.com,Yamaha Tenere 700,yes,0,1,yes
+Paul Wilson,2024-08-19 03:48:24,Jacksonville,FL,4326,paul.wilson@example.com,Yamaha Niken,yes,1,1,yes
+Steven Anderson,2024-08-11 07:21:54,Sacramento,CA,4325,steven.anderson@example.com,Yamaha YZF-R1,yes,1,1,yes
+Andrew Thomas,2024-08-15 12:45:41,Winston-Salem,NC,4324,andrew.thomas@example.com,Yamaha MT-07,no,0,1,no
+Kenneth Taylor,2024-08-13 17:42:00,Chandler,AZ,4318,kenneth.taylor@example.com,Yamaha XTZ 250 Lander,no,1,0,yes
+Joshua Moore,2024-08-17 11:20:35,Hialeah,FL,4314,joshua.moore@example.com,Yamaha FZ25,no,1,0,yes
+Kevin Jackson,2024-08-15 13:49:47,Bakersfield,CA,4318,kevin.jackson@example.com,Yamaha XMAX 250,no,0,0,no
+Brian Martin,2024-08-17 09:27:39,Wichita,KS,4319,brian.martin@example.com,Yamaha Tenere 700,no,0,1,yes
+George Lee,2024-08-14 07:23:36,Chicago,IL,4315,george.lee@example.com,Yamaha Niken,yes,0,0,yes
+Edward Perez,2024-08-18 22:47:30,Orlando,FL,4325,edward.perez@example.com,Yamaha YZF-R1,yes,1,1,yes
+Ronald Thompson,2024-08-16 07:14:21,Reno,NV,4315,ronald.thompson@example.com,Yamaha MT-07,yes,0,0,no
+Timothy White,2024-08-15 09:18:44,Raleigh,NC,4307,timothy.white@example.com,Yamaha XTZ 250 Lander,no,0,1,yes
+Jason Harris,2024-08-16 02:04:45,Irving,TX,4318,jason.harris@example.com,Yamaha FZ25,no,1,0,yes
+Jeffrey Clark,2024-08-10 01:44:33,Bakersfield,CA,4325,jeffrey.clark@example.com,Yamaha XMAX 250,no,0,1,yes
+Ryan Lewis,2024-08-12 13:38:52,Las Vegas,NV,4327,ryan.lewis@example.com,Yamaha Tenere 700,yes,1,1,yes
+Jacob Robinson,2024-08-18 11:24:02,Boise,ID,4319,jacob.robinson@example.com,Yamaha Niken,yes,1,0,yes
+Gary Walker,2024-08-17 16:07:31,Bakersfield,CA,4305,gary.walker@example.com,Yamaha YZF-R1,yes,1,0,yes
+Nicholas Young,2024-08-16 18:21:26,Chula Vista,CA,4327,nicholas.young@example.com,Yamaha MT-07,yes,1,0,no
+Eric Allen,2024-08-13 14:30:11,Fort Worth,TX,4301,eric.allen@example.com,Yamaha XTZ 250 Lander,yes,1,0,yes
+Stephen King,2024-08-17 18:17:44,Fort Wayne,IN,4310,stephen.king@example.com,Yamaha FZ25,yes,0,0,no
+Jonathan Wright,2024-08-16 01:07:35,Miami,FL,4315,jonathan.wright@example.com,Yamaha XMAX 250,yes,1,0,no
+Larry Scott,2024-08-15 16:48:39,Cincinnati,OH,4302,larry.scott@example.com,Yamaha Tenere 700,no,0,1,no
+Justin Green,2024-08-19 00:55:09,Detroit,MI,4300,justin.green@example.com,Yamaha Niken,no,1,0,yes
+Scott Adams,2024-08-16 23:57:04,Henderson,NV,4325,scott.adams@example.com,Yamaha YZF-R1,yes,0,1,yes
+Brandon Baker,2024-08-11 09:01:25,Orlando,FL,4316,brandon.baker@example.com,Yamaha MT-07,no,1,1,no
+Benjamin Nelson,2024-08-19 13:34:03,San Jose,CA,4321,benjamin.nelson@example.com,Yamaha XTZ 250 Lander,no,0,0,yes
+Samuel Hill,2024-08-12 07:36:18,Los Angeles,CA,4318,samuel.hill@example.com,Yamaha FZ25,no,0,0,no
+Gregory Carter,2024-08-15 17:54:21,Tucson,AZ,4318,gregory.carter@example.com,Yamaha XMAX 250,yes,1,1,no
+Frank Mitchell,2024-08-18 16:57:32,Laredo,TX,4318,frank.mitchell@example.com,Yamaha Tenere 700,yes,0,1,yes
+Patrick Roberts,2024-08-15 22:58:27,Orlando,FL,4300,patrick.roberts@example.com,Yamaha Niken,no,1,1,yes
+Alexander Turner,2024-08-13 19:01:36,Cleveland,OH,4302,alexander.turner@example.com,Yamaha YZF-R1,no,1,0,yes
+Raymond Phillips,2024-08-13 13:56:05,Boston,MA,4325,raymond.phillips@example.com,Yamaha MT-07,no,0,0,yes
+Jack Campbell,2024-08-12 12:19:44,Garland,TX,4303,jack.campbell@example.com,Yamaha XTZ 250 Lander,yes,1,1,yes
+Dennis Parker,2024-08-17 23:03:10,Seattle,WA,4307,dennis.parker@example.com,Yamaha FZ25,no,0,1,no
+Jerry Evans,2024-08-15 04:35:54,Chesapeake,VA,4321,jerry.evans@example.com,Yamaha XMAX 250,yes,1,1,yes
+Tyler Edwards,2024-08-13 11:30:56,Jacksonville,FL,4304,tyler.edwards@example.com,Yamaha Tenere 700,no,1,0,no
+Aaron Collins,2024-08-16 19:43:20,Chandler,AZ,4325,aaron.collins@example.com,Yamaha Niken,no,0,1,no
+Jose Stewart,2024-08-10 12:16:08,Greensboro,NC,4326,jose.stewart@example.com,Yamaha YZF-R1,yes,1,1,no
+Adam Sanchez,2024-08-19 04:23:46,Scottsdale,AZ,4325,adam.sanchez@example.com,Yamaha MT-07,yes,0,1,no
+Nathan Morris,2024-08-17 13:50:04,Irving,TX,4325,nathan.morris@example.com,Yamaha XTZ 250 Lander,no,0,0,no
+Henry Rogers,2024-08-16 07:02:23,Denver,CO,4302,henry.rogers@example.com,Yamaha FZ25,yes,0,1,yes
+Douglas Reed,2024-08-15 10:45:35,Louisville,KY,4310,douglas.reed@example.com,Yamaha XMAX 250,no,0,0,no
+Zachary Cook,2024-08-12 07:00:31,Jacksonville,FL,4318,zachary.cook@example.com,Yamaha Tenere 700,no,0,0,yes
+Peter Morgan,2024-08-14 18:57:21,Laredo,TX,4311,peter.morgan@example.com,Yamaha Niken,yes,1,0,yes
+Kyle Bell,2024-08-11 21:01:29,Raleigh,NC,4307,kyle.bell@example.com,Yamaha YZF-R1,yes,1,0,no
+Walter Murphy,2024-08-17 14:28:18,Anaheim,CA,4316,walter.murphy@example.com,Yamaha MT-07,yes,0,1,yes
+Harold Bailey,2024-08-12 00:04:09,Madison,WI,4325,harold.bailey@example.com,Yamaha XTZ 250 Lander,no,0,1,no
+Jeremy Rivera,2024-08-12 01:55:44,Lexington,KY,4328,jeremy.rivera@example.com,Yamaha FZ25,yes,0,0,yes
+Carl Cooper,2024-08-09 23:25:34,Plano,TX,4325,carl.cooper@example.com,Yamaha XMAX 250,no,1,0,yes
+Arthur Richardson,2024-08-11 11:53:52,Austin,TX,4321,arthur.richardson@example.com,Yamaha Tenere 700,yes,0,0,yes
+Terry Cox,2024-08-17 16:39:08,Reno,NV,4317,terry.cox@example.com,Yamaha Niken,yes,1,0,no
+Sean Howard,2024-08-12 18:28:03,Orlando,FL,4302,sean.howard@example.com,Yamaha YZF-R1,no,0,1,no
+Lawrence Ward,2024-08-15 13:58:06,Anchorage,AK,4318,lawrence.ward@example.com,Yamaha MT-07,no,0,1,no
+Christian Flores,2024-08-19 02:49:17,Winston-Salem,NC,4325,christian.flores@example.com,Yamaha XTZ 250 Lander,no,0,0,no
+Austin Torres,2024-08-18 12:05:42,Chandler,AZ,4325,austin.torres@example.com,Yamaha FZ25,no,0,1,no
+Joe Ramirez,2024-08-10 11:35:13,Cleveland,OH,4318,joe.ramirez@example.com,Yamaha XMAX 250,yes,1,0,no
+Ethan Wood,2024-08-10 23:15:49,St. Louis,MO,4325,ethan.wood@example.com,Yamaha Tenere 700,yes,0,1,yes
+Jesse Gray,2024-08-10 09:11:04,Buffalo,NY,4325,jesse.gray@example.com,Yamaha Niken,yes,0,0,yes
+Willie James,2024-08-15 10:20:02,Cleveland,OH,4312,willie.james@example.com,Yamaha YZF-R1,yes,0,0,yes
+Billy Watson,2024-08-11 08:12:32,Los Angeles,CA,4300,billy.watson@example.com,Yamaha MT-07,yes,1,1,yes
+Bryan Brooks,2024-08-12 13:54:02,Toledo,OH,4316,bryan.brooks@example.com,Yamaha XTZ 250 Lander,yes,1,1,no
+Bruce Kelly,2024-08-16 23:02:12,Denver,CO,4325,bruce.kelly@example.com,Yamaha FZ25,no,1,1,yes
+Jordan Sanders,2024-08-17 23:19:42,Oklahoma City,OK,4307,jordan.sanders@example.com,Yamaha XMAX 250,no,0,1,no
+Ralph Price,2024-08-14 21:27:41,Pittsburgh,PA,4307,ralph.price@example.com,Yamaha Tenere 700,no,0,1,yes
+Roy Bennett,2024-08-10 15:12:06,Austin,TX,4301,roy.bennett@example.com,Yamaha Niken,no,1,0,yes
+Noah Butler,2024-08-17 16:36:44,Lubbock,TX,4318,noah.butler@example.com,Yamaha YZF-R1,no,0,1,yes
+Dylan Barnes,2024-08-12 21:40:07,Denver,CO,4300,dylan.barnes@example.com,Yamaha MT-07,yes,1,1,yes
+Eugene Foster,2024-08-12 18:13:44,Charlotte,NC,4328,eugene.foster@example.com,Yamaha XTZ 250 Lander,no,0,1,no
+Wayne Gonzales,2024-08-19 01:47:32,Lexington,KY,4305,wayne.gonzales@example.com,Yamaha FZ25,no,0,1,no
+Alan Bryant,2024-08-11 18:58:43,Lexington,KY,4307,alan.bryant@example.com,Yamaha XMAX 250,no,0,1,yes
+Randy Alexander,2024-08-13 11:55:24,Fremont,CA,4308,randy.alexander@example.com,Yamaha Tenere 700,yes,1,0,no
+Louis Russell,2024-08-12 13:34:33,Stockton,CA,4325,louis.russell@example.com,Yamaha Niken,no,1,0,no
+Vincent Griffin,2024-08-10 07:41:44,New Orleans,LA,4309,vincent.griffin@example.com,Yamaha YZF-R1,yes,0,1,no
+Philip Diaz,2024-08-16 02:02:13,Lexington,KY,4313,philip.diaz@example.com,Yamaha MT-07,no,1,1,no
+Bobby Hayes,2024-08-14 08:01:29,Houston,TX,4327,bobby.hayes@example.com,Yamaha XTZ 250 Lander,yes,1,0,no
+Johnny Myers,2024-08-10 17:10:39,Baltimore,MD,4325,johnny.myers@example.com,Yamaha FZ25,no,1,1,yes
+Howard Ford,2024-08-15 15:59:50,Henderson,NV,4329,howard.ford@example.com,Yamaha XMAX 250,yes,1,0,yes
+Gabriel Hamilton,2024-08-15 16:51:21,Houston,TX,4301,gabriel.hamilton@example.com,Yamaha Tenere 700,no,1,0,yes
+Louis Graham,2024-08-17 10:24:17,Anchorage,AK,4318,louis.graham@example.com,Yamaha Niken,no,1,1,no
+Jared Fisher,2024-08-13 09:12:21,Anaheim,CA,4325,jared.fisher@example.com,Yamaha YZF-R1,yes,0,1,no
+Shawn Watts,2024-08-09 21:52:57,Louisville,KY,4302,shawn.watts@example.com,Yamaha MT-07,yes,0,1,yes
+Bradley Jordan,2024-08-16 01:11:31,Boise,ID,4312,bradley.jordan@example.com,Yamaha XTZ 250 Lander,yes,1,1,yes
+Cameron Wallace,2024-08-18 06:55:15,Gilbert,AZ,4325,cameron.wallace@example.com,Yamaha FZ25,yes,0,1,no
+Keith Butler,2024-08-09 18:22:22,Oklahoma City,OK,4300,keith.butler@example.com,Yamaha XMAX 250,no,0,1,no
+Roger Simmons,2024-08-10 14:13:35,Tucson,AZ,4303,roger.simmons@example.com,Yamaha Tenere 700,no,0,0,no
+Gerald Patterson,2024-08-11 06:47:37,Wichita,KS,4320,gerald.patterson@example.com,Yamaha Niken,yes,0,0,yes
+Jeremy Hughes,2024-08-17 01:09:38,Raleigh,NC,4320,jeremy.hughes@example.com,Yamaha YZF-R1,no,0,0,no
+Lawrence Sullivan,2024-08-17 04:21:07,Bakersfield,CA,4300,lawrence.sullivan@example.com,Yamaha MT-07,no,1,0,no
