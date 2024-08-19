@@ -114,6 +114,14 @@ if st.session_state['page'] == 'Following':
         if selected_lead:
             lead_info_group = df_american_names[df_american_names['lead'] == selected_lead]
             
+            # Reorder the dataframe for lead 4325 to have "Yamaha Tenere 700" first
+            if selected_lead == 4325:
+                lead_info_group = lead_info_group.sort_values(
+                    by='motorcycles', 
+                    ascending=False, 
+                    key=lambda col: col == 'Yamaha Tenere 700'
+                )
+            
             st.write(f"**Lead Number:** {selected_lead}")
             
             for idx, lead_info in lead_info_group.iterrows():
@@ -137,6 +145,7 @@ if st.session_state['page'] == 'Following':
         st.warning("The dataset for American names is not loaded.")
 
 # The rest of your code remains intact...
+
 
 
 
