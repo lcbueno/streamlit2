@@ -53,7 +53,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
 # Sidebar for main page selection
 st.sidebar.title("Analytical Dashboard")
 
@@ -79,6 +78,29 @@ uploaded_files = st.sidebar.file_uploader("Choose CSV files", type="csv", accept
 # Initialize the session state for the main page
 if 'page' not in st.session_state:
     st.session_state['page'] = 'Overview Data'
+
+# Variables to store processed DataFrames
+df_sales = None
+df_nlp = None
+
+# Process the uploaded CSV files
+if uploaded_files:
+    for uploaded_file in uploaded_files:
+        df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
+        
+        # Check if the file contains the 'Date' column for the sales dataset
+        if 'Date' in df.columns:
+            df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
+            df = df.dropna(subset=['Date'])
+            df_sales = df
+        # Check if the uploaded file is the NLP dataset
+        elif 'review' in df.columns:
+            df_nlp = df
+        # Check if the file is the american_names_with_random_download_versions_scheduled.csv dataset
+        elif 'timestamp' in df.columns and 'download' in df.columns:
+            df_american_names = df
+        else:
+            st.warning(f"The file {uploaded_file.name} does not contain the necessary columns for analysis and will be ignored.")
 
 # Página: Following
 if st.session_state['page'] == "Following":
@@ -140,7 +162,11 @@ if st.session_state['page'] == "Overview":
             mime='text/csv',
         )
 
-# The rest of your code remains intact...
+# Página: NLP (análise de processamento de linguagem natural)
+if df_nlp is not None and st.session_state['page'] == "NLP":
+    st.title('Dashboard Yamaha - NLP Analysis')
+    # Coloque aqui o código para análise de NLP
+
 
 
 
