@@ -82,6 +82,7 @@ if 'page' not in st.session_state:
 # Variables to store processed DataFrames
 df_sales = None
 df_nlp = None
+df_american_names = None
 
 # Process the uploaded CSV files
 if uploaded_files:
@@ -96,17 +97,13 @@ if uploaded_files:
         # Check if the uploaded file is the NLP dataset
         elif 'review' in df.columns:
             df_nlp = df
+        # Check if the uploaded file is the American names dataset
+        elif 'timestamp' in df.columns and 'download' in df.columns:
+            df_american_names = df
         else:
-            st.warning(f"The file {uploaded_file.name} does not contain the necessary columns for analysis and will be ignored.")
+            st.warning(f"The file {uploaded_file.name} does not contain the necessary columns for the primary analysis.")
 
 # The rest of your code remains intact...
-
-
-
-
-
-
-
 
 # Sales dataset processing
 if df_sales is not None and st.session_state['page'] != "NLP":
