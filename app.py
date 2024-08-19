@@ -53,12 +53,28 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Sidebar for main page selection
-st.sidebar.title("Analytical Dashboard")
 
 # New button "Following"
 if st.sidebar.button("Following"):
     st.session_state['page'] = 'Following'
+
+# Página: Following
+if st.session_state['page'] == "Following":
+    st.title('Dashboard Yamaha - Following')
+
+    # Initialize the session state for the 'Following' page buttons if not yet defined
+    if 'following_chart_type' not in st.session_state:
+        st.session_state['following_chart_type'] = 'Leads'
+
+    # Top button for the "Following" page
+    col1 = st.columns(1)
+    with col1[0]:
+        if st.button("Leads"):
+            st.session_state['following_chart_type'] = "Leads"
+
+    # Display the chart or data based on the button choice
+    if st.session_state['following_chart_type'] == 'Leads':
+        st.write("Leads data and analysis will be displayed here.")
 
 # Existing buttons
 if st.sidebar.button("Overview Data"):
@@ -78,6 +94,17 @@ uploaded_files = st.sidebar.file_uploader("Choose CSV files", type="csv", accept
 # Initialize the session state for the main page
 if 'page' not in st.session_state:
     st.session_state['page'] = 'Overview Data'
+
+# The rest of your code remains intact...
+
+
+
+
+
+
+
+
+
 
 # Variables to store processed DataFrames
 df_sales = None
