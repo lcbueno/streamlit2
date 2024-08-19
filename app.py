@@ -108,8 +108,12 @@ if st.session_state['page'] == 'Following':
     st.title("Following Dashboard")
     
     if st.button("Leads"):
-        st.write("Leads button clicked")
-        # Add your leads-related functionality here
+        if df_american_names is not None:
+            leads = df_american_names['lead'].unique()
+            selected_lead = st.selectbox('Select Leads', leads)
+            st.write(f'Selected Lead: {selected_lead}')
+        else:
+            st.warning("The dataset for American names is not loaded.")
 
 # The rest of your code remains intact...
 
