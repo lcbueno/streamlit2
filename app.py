@@ -96,79 +96,74 @@ if uploaded_files:
         # Check if the uploaded file is the NLP dataset
         elif 'review' in df.columns:
             df_nlp = df
-        # Check if the file is the american_names_with_random_download_versions_scheduled.csv dataset
-        elif 'timestamp' in df.columns and 'download' in df.columns:
-            df_american_names = df
         else:
             st.warning(f"The file {uploaded_file.name} does not contain the necessary columns for analysis and will be ignored.")
 
-# Página: Following
-if st.session_state['page'] == "Following":
-    st.title('Dashboard Yamaha - Following')
-
-    # Initialize the session state for the 'Following' page buttons if not yet defined
-    if 'following_chart_type' not in st.session_state:
-        st.session_state['following_chart_type'] = 'Leads'
-
-    # Top button for the "Following" page
-    col1 = st.columns(1)
-    with col1[0]:
-        if st.button("Leads"):
-            st.session_state['following_chart_type'] = "Leads"
-
-    # Display the chart or data based on the button choice
-    if st.session_state['following_chart_type'] == 'Leads':
-        st.write("Leads data and analysis will be displayed here.")
-
-# Página: Overview Data
-if st.session_state['page'] == "Overview":
-    st.title('Dashboard Yamaha - Overview Data')
-
-    # Inicializar o estado da sessão para os gráficos se ainda não foi definido
-    if 'chart_type' not in st.session_state:
-        st.session_state['chart_type'] = 'Overview'
-
-    # Botões no topo para escolher o gráfico
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("Overview"):
-            st.session_state['chart_type'] = "Overview"
-    with col2:
-        if st.button("Unique Values"):
-            st.session_state['chart_type'] = "Unique Values"
-    with col3:
-        if st.button("Download Dataset"):
-            st.session_state['chart_type'] = "Download Dataset"
-
-    # Exibir o gráfico com base na escolha do botão
-    if st.session_state['chart_type'] == 'Overview':
-        st.write("Sales DataFrame Visualization:")
-        st.dataframe(filtered_df, width=1500, height=600)  # Exibe o DataFrame de vendas
-
-        if df_nlp is not None:
-            st.write("NLP DataFrame Visualization:")
-            st.dataframe(df_nlp, width=1500, height=600)  # Exibe o DataFrame de NLP
-
-    elif st.session_state['chart_type'] == 'Unique Values':
-        unique_counts = filtered_df.nunique()
-        st.write("Count unique values per column:")
-        st.write(unique_counts)
-
-    elif st.session_state['chart_type'] == 'Download Dataset':
-        st.download_button(
-            label="Download Full Dataset",
-            data=filtered_df.to_csv(index=False),
-            file_name='full_dataset.csv',
-            mime='text/csv',
-        )
-
-# Página: NLP (análise de processamento de linguagem natural)
-if df_nlp is not None and st.session_state['page'] == "NLP":
-    st.title('Dashboard Yamaha - NLP Analysis')
-    # Coloque aqui o código para análise de NLP
+# The rest of your code remains intact...
 
 
 
+
+
+
+
+
+# Sales dataset processing
+if df_sales is not None and st.session_state['page'] != "NLP":
+    # Apply filters (without showing in the layout)
+    regions = df_sales['Dealer_Region'].unique()
+    min_date = df_sales['Date'].min().date()
+    max_date = df_sales['Date'].max().date()
+    selected_region = regions  # Automatically apply all regions
+    selected_dates = [min_date, max_date]  # Automatically apply the full range
+
+    selected_dates = pd.to_datetime(selected_dates)
+
+    filtered_df = df_sales[(df_sales['Dealer_Region'].isin(selected_region)) & 
+                           (df_sales['Date'].between(selected_dates[0], selected_dates[1]))]
+
+    # Página: Overview Data
+    if st.session_state['page'] == "Overview":
+        st.title('Dashboard Yamaha - Overview Data')
+    
+        # Inicializar o estado da sessão para os gráficos se ainda não foi definido
+        if 'chart_type' not in st.session_state:
+            st.session_state['chart_type'] = 'Overview'
+    
+        # Botões no topo para escolher o gráfico
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("Overview"):
+                st.session_state['chart_type'] = "Overview"
+        with col2:
+            if st.button("Unique Values"):
+                st.session_state['chart_type'] = "Unique Values"
+        with col3:
+            if st.button("Download Dataset"):
+                st.session_state['chart_type'] = "Download Dataset"
+    
+        # Exibir o gráfico com base na escolha do botão
+        if st.session_state['chart_type'] == 'Overview':
+            st.write("Sales DataFrame Visualization:")
+            st.dataframe(filtered_df, width=1500, height=600)  # Exibe o DataFrame de vendas
+    
+            if df_nlp is not None:
+                st.write("NLP DataFrame Visualization:")
+                st.dataframe(df_nlp, width=1500, height=600)  # Exibe o DataFrame de NLP
+    
+        elif st.session_state['chart_type'] == 'Unique Values':
+            unique_counts = filtered_df.nunique()
+            st.write("Count unique values per column:")
+            st.write(unique_counts)
+    
+        elif st.session_state['chart_type'] == 'Download Dataset':
+            st.download_button(
+                label="Download Full Dataset",
+                data=filtered_df.to_csv(index=False),
+                file_name='full_dataset.csv',
+                mime='text/csv',
+            )
+    
 
     # Page: Regional Sales
     elif st.session_state['page'] == "Regional Sales":
