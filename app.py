@@ -96,17 +96,11 @@ if uploaded_files:
         # Check if the uploaded file is the NLP dataset
         elif 'review' in df.columns:
             df_nlp = df
+        # Check if the file is the american_names_with_random_download_versions_scheduled.csv dataset
+        elif 'timestamp' in df.columns and 'download' in df.columns:
+            df_american_names = df
         else:
             st.warning(f"The file {uploaded_file.name} does not contain the necessary columns for analysis and will be ignored.")
-
-# The rest of your code remains intact...
-
-
-
-
-
-
-
 
 # Sales dataset processing
 if df_sales is not None and st.session_state['page'] != "NLP":
