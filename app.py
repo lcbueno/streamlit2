@@ -103,7 +103,20 @@ if uploaded_files:
         else:
             st.warning(f"The file {uploaded_file.name} does not contain the necessary columns for the primary analysis.")
 
+# Following page
+if st.session_state['page'] == 'Following':
+    st.title("Following Dashboard")
+    
+    if st.button("Leads"):
+        st.write("Leads button clicked")
+        # Add your leads-related functionality here
+
 # The rest of your code remains intact...
+
+
+
+
+
 
 # Sales dataset processing
 if df_sales is not None and st.session_state['page'] != "NLP":
