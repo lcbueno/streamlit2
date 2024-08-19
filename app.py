@@ -55,6 +55,12 @@ st.markdown("""
 
 # Sidebar for main page selection
 st.sidebar.title("Analytical Dashboard")
+
+# New button "Following"
+if st.sidebar.button("Following"):
+    st.session_state['page'] = 'Following'
+
+# Existing buttons
 if st.sidebar.button("Overview Data"):
     st.session_state['page'] = 'Overview'
 if st.sidebar.button("Regional Sales"):
@@ -92,6 +98,15 @@ if uploaded_files:
             df_nlp = df
         else:
             st.warning(f"The file {uploaded_file.name} does not contain the necessary columns for analysis and will be ignored.")
+
+# The rest of your code remains intact...
+
+
+
+
+
+
+
 
 # Sales dataset processing
 if df_sales is not None and st.session_state['page'] != "NLP":
