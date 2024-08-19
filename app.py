@@ -111,14 +111,22 @@ if st.session_state['page'] == 'Following':
         if df_american_names is not None:
             leads = df_american_names['lead'].unique()
             selected_lead = st.selectbox('Select Leads', leads)
-            st.write(f'Selected Lead: {selected_lead}')
+            
+            if selected_lead:
+                lead_info = df_american_names[df_american_names['lead'] == selected_lead].iloc[0]
+                st.write(f"**Lead Number:** {lead_info['lead']}")
+                st.write(f"**Timestamp:** {lead_info['timestamp']}")
+                st.write(f"**City:** {lead_info['city']}")
+                st.write(f"**State:** {lead_info['state']}")
+                st.write(f"**Email:** {lead_info['email']}")
+                st.write(f"**Product:** {lead_info['motorcycles']}")
+                st.write(f"**Download:** {'Yes' if lead_info['download'] else 'No'}")
+                st.write(f"**Version:** {lead_info['version']}")
+                st.write(f"**Scheduled:** {lead_info['scheduled']}")
         else:
             st.warning("The dataset for American names is not loaded.")
 
 # The rest of your code remains intact...
-
-
-
 
 
 
